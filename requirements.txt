@@ -1,5 +1,5 @@
 requests==2.32.3
-streamlit==1.50.0
+streamlit==1.25.0
 PyPDF2==2.11.0
 gtts==2.3.2
 pytesseract==0.3.10
@@ -13,4 +13,3 @@ torch>=2.2.0
 torchaudio>=2.2.0
 accelerate==0.21.0
 datasets==2.13.0
-
