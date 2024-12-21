@@ -1,7 +1,6 @@
 requests==2.32.3
 streamlit==1.41.1
-PyPDF2==3.0.1
-gtts
+PyPDF2
 pytesseract
 Pillow
 pytz
@@ -11,3 +10,5 @@ pydub
 transformers==4.17.0
 torch
 torchaudio
+gTTS
+transformers==4.17.0
