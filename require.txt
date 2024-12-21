@@ -1,6 +1,6 @@
 requests==2.32.3
 streamlit==1.50.0
-PyPDF2==3.0.1
+PyPDF2==2.11.0
 gtts==2.3.2
 pytesseract==0.3.10
 Pillow==10.0.0
