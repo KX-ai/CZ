@@ -295,15 +295,28 @@ languages = [
 ]
 selected_language = st.selectbox("Choose your preferred language for output", languages)
 
-# Handle different input methods
-if input_method == "Upload PDF":
-    uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
+# Input method selection
+input_method = st.radio("Select input method", ["Upload PDF", "Enter Text Manually"])
 
-    if uploaded_file:
-        # Extract text from the uploaded PDF
-        st.write("Extracting text from the uploaded PDF...")
-        pdf_text = extract_text_from_pdf(uploaded_file)
-        st.success("Text extracted successfully!")
+if selected_model_id:
+    # Proceed with model interaction
+    if input_method == "Upload PDF":
+        uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
+        if uploaded_file is not None:
+            # Code to read and extract text from PDF
+            content = extract_text_from_pdf(uploaded_file)
+            st.write("PDF text extracted.")
+    elif input_method == "Enter Text Manually":
+        content = st.text_area("Enter text for summarization:")
+    
+    if content:  # Check if content has been populated from either method
+        if st.button("Summarize Text", key="summarize_button"):
+            st.write("Summarizing the text...")
+            summary = summarize_text(content, selected_model_id)
+            st.write("Summary:")
+            st.write(summary)
+    else:
+        st.warning("Please provide content for summarization.")
 
         # Display extracted text with adjusted font size
         with st.expander("View Extracted Text"):
