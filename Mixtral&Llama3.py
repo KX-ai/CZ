@@ -115,8 +115,8 @@ headers = {
 available_models = {
     "Mixtral 8x7b": "mixtral-8x7b-32768",
     "Llama 3.1 70b Versatile": "llama-3.1-70b-versatile",
-    "Qwen 2.5-72B-Instruct": "sambanova-qwen-2.5-72b-instruct",
-    "Meta-Llama 3.2-1B-Instruct": "sambanova-meta-llama-3.2-1b-instruct"
+    "Qwen 2.5-72B-Instruct": "Qwen2.5-72B-Instruct",
+    "Meta-Llama 3.2-1B-Instruct": "Meta-Llama-3.2-1B-Instruct"
 }
 
 # Step 1: Function to Extract Text from PDF
@@ -127,7 +127,17 @@ def extract_text_from_pdf(pdf_file):
         extracted_text += page.extract_text()
     return extracted_text
 
-# Function to Summarize the Text
+import os
+import requests
+
+# Set Base URL and Headers
+base_url = "https://api.sambanova.ai/v1"
+headers = {
+    "Authorization": f"Bearer {os.environ.get('SAMBANOVA_API_KEY')}",
+    "Content-Type": "application/json"
+}
+
+# Function to Summarize Text
 def summarize_text(text, model_id):
     url = f"{base_url}/chat/completions"
     data = {
@@ -151,7 +161,7 @@ def summarize_text(text, model_id):
     except requests.exceptions.RequestException as e:
         return f"An error occurred: {e}"
 
-# Function to Translate Text Using the Selected Model
+# Function to Translate Text
 def translate_text(text, target_language, model_id):
     url = f"{base_url}/chat/completions"
     data = {
@@ -171,9 +181,10 @@ def translate_text(text, target_language, model_id):
             result = response.json()
             return result['choices'][0]['message']['content']
         else:
-            return f"Translation error: {response.status_code}"
+            return f"Translation error: {response.status_code}: {response.text}"
     except requests.exceptions.RequestException as e:
         return f"An error occurred during translation: {e}"
+
 
 # Updated function to transcribe audio using the Groq Whisper API
 def transcribe_audio(file):
