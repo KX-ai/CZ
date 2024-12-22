@@ -63,19 +63,7 @@ class GroqClient:
             response.raise_for_status()  # Raise an exception for HTTP errors
             return response.json()['choices'][0]['message']['content']
         except requests.exceptions.RequestException as e:
-            raise Exception(f"Error while calling Groq API: {str(e)}")
-
-
-        # Request payload
-        data = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "top_p": top_p
-        }
-
-       
+            raise Exception(f"Error while calling Groq API: {str(e)}")       
 
 # Instantiate the API clients
 sambanova_client = SambanovaClient(api_key=st.secrets["general"]["SAMBANOVA_API_KEY"], base_url="https://api.sambanova.ai/v1")
