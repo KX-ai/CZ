@@ -13,6 +13,8 @@ import openai
 import pytz
 import time
 
+pdf_text = ""
+
 # Accessing the Sambanova API key from Streamlit secrets
 sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
 
