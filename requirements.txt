@@ -10,4 +10,7 @@ pydub
 transformers
 gTTS
 numpy
-openai
+torch
+torchvision
+torchaudio
+
