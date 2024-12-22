@@ -16,28 +16,62 @@ import time
 # Accessing the Sambanova API key from Streamlit secrets
 sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
 
+# Initialize SambaNova API Client
 class SambanovaClient:
     def __init__(self, api_key, base_url):
-        # Initialize the SambaNova OpenAI client
-        self.client = openai.OpenAI(
-            api_key=api_key,
-            base_url=base_url
-        )
-
+        self.api_key = api_key
+        self.base_url = base_url
+    
     def chat(self, model, messages, temperature=0.7, top_p=1.0, max_tokens=500):
+        url = f"{self.base_url}/chat/completions"
+        data = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "top_p": top_p
+        }
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
         try:
-            # Make the chat completion request
-            response = self.client.chat.completions.create(
-                model=model,
-                messages=messages,
-                temperature=temperature,
-                top_p=top_p,
-                max_tokens=max_tokens
-            )
-            # Extract and return the response
-            return response['choices'][0]['message']['content']
-        except Exception as e:
+            response = requests.post(url, headers=headers, json=data)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+            return response.json()['choices'][0]['message']['content']
+        except requests.exceptions.RequestException as e:
             raise Exception(f"Error while calling SambaNova API: {str(e)}")
+
+# Initialize Groq API (this one handles Mixtral and Llama models)
+class GroqClient:
+    def __init__(self, api_key, base_url):
+        self.api_key = api_key
+        self.base_url = base_url
+    
+    def chat(self, model, messages, temperature=0.7, top_p=1.0, max_tokens=500):
+        url = f"{self.base_url}/chat/completions"
+        data = {
+            "model": model,
+            "messages": messages,
+            "temperature": temperature,
+            "max_tokens": max_tokens,
+            "top_p": top_p
+        }
+        
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+
+        try:
+            response = requests.post(url, headers=headers, json=data)
+            response.raise_for_status()  # Raise an exception for HTTP errors
+            return response.json()['choices'][0]['message']['content']
+        except requests.exceptions.RequestException as e:
+            raise Exception(f"Error while calling Groq API: {str(e)}")
+
 
         # Request payload
         data = {
@@ -59,10 +93,21 @@ class SambanovaClient:
             # Catch errors and return a useful message
             raise Exception(f"Error while calling Sambanova API: {str(e)}")
 
-# Initialize the SambanovaClient
-base_url = "https://api.sambanova.ai/v1"
-sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
-client = SambanovaClient(api_key=sambanova_api_key, base_url=base_url)
+# Instantiate the API clients
+sambanova_client = SambanovaClient(api_key=st.secrets["general"]["SAMBANOVA_API_KEY"], base_url="https://api.sambanova.ai/v1")
+groq_client = GroqClient(api_key=st.secrets["groq_api"]["api_key"], base_url="https://api.groq.com/openai/v1")
+
+# Define function to route the model to the appropriate API
+def get_model_response(model, messages, selected_model_id, temperature=0.7, top_p=1.0, max_tokens=500):
+    # Check if the model is from SambaNova or Groq
+    if selected_model_id in ["Meta-Llama-3.2-1B-Instruct", "Qwen2.5-72B-Instruct"]:
+        # SambaNova models
+        return sambanova_client.chat(model=selected_model_id, messages=messages, temperature=temperature, top_p=top_p, max_tokens=max_tokens)
+    elif selected_model_id in ["Mixtral 8x7b", "Llama-3.1-70b-versatile"]:
+        # Groq models
+        return groq_client.chat(model=selected_model_id, messages=messages, temperature=temperature, top_p=top_p, max_tokens=max_tokens)
+    else:
+        raise ValueError("Selected model is not supported.")
 
 
 # Hugging Face BLIP-2 Setup
@@ -245,18 +290,19 @@ def extract_text_from_image(image_file):
 # Input Method Selection
 input_method = st.selectbox("Select Input Method", ["Upload PDF", "Enter Text Manually", "Upload Audio", "Upload Image"])
 
-# Model selection - Available only for PDF and manual text input
-if input_method in ["Upload PDF", "Enter Text Manually"]:
-    selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
-    
-    # Ensure that the user selects a model (no default)
-    if selected_model_name:
-        selected_model_id = available_models[selected_model_name]
-    else:
-        st.error("Please select a model to proceed.")
-        selected_model_id = None
-else:
-    selected_model_id = None
+# Model selection - Available for PDF and manual text input
+selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
+selected_model_id = available_models[selected_model_name]
+
+if selected_model_id:
+    # Proceed with model interaction
+    if input_method == "Upload PDF" or input_method == "Enter Text Manually":
+        if st.button("Summarize Text"):
+            st.write("Summarizing the text...")
+            summary = summarize_text(content, selected_model_id)
+            st.write("Summary:")
+            st.write(summary)
+
 
 # Sidebar for interaction history
 if "history" not in st.session_state:
