@@ -43,7 +43,7 @@ def get_sambanova_response(model_name, user_input):
         "top_p": 0.1
     }
 
-        try:
+    try:
             # Send POST request to the Sambanova API
             response = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=data)
             response.raise_for_status()  # Raise an exception for HTTP errors
