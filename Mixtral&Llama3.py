@@ -16,27 +16,32 @@ import time
 # Accessing the Sambanova API key from Streamlit secrets
 sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
 
+# Initialize SambanovaClient with the API key fetched from secrets
+base_url = "https://api.sambanova.ai/v1"  # Correct Sambanova URL
+client = SambanovaClient(api_key=sambanova_api_key, base_url=base_url)
+
 class SambanovaClient:
     def __init__(self, api_key, base_url):
         # Initialize with API key and base URL
         self.api_key = api_key
         self.base_url = base_url
 
-    def chat(self, model, messages, temperature=0.7, top_p=1.0, max_tokens=500):
-        # Prepare headers and data for the API request
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-
-        # Request payload
-        data = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "top_p": top_p
-        }
+   # Define a function to send requests to the Sambanova API
+def get_sambanova_response(model_name, user_input):
+    headers = {
+        "Authorization": f"Bearer {sambanova_api_key}",
+        "Content-Type": "application/json"
+    }
+    
+    data = {
+        "model": model_name,
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant."},
+            {"role": "user", "content": user_input}
+        ],
+        "temperature": 0.1,
+        "top_p": 0.1
+    }
 
         try:
             # Send POST request to the Sambanova API
@@ -49,9 +54,7 @@ class SambanovaClient:
             # Catch errors and return a useful message
             raise Exception(f"Error while calling Sambanova API: {str(e)}")
 
-# Initialize SambanovaClient with the API key fetched from secrets
-base_url = "https://api.sambanova.ai/v1"  # Correct Sambanova URL
-client = SambanovaClient(api_key=sambanova_api_key, base_url=base_url)
+
 
 # Hugging Face BLIP-2 Setup
 hf_token = "hf_rLRfVDnchDCuuaBFeIKTAbrptaNcsHUNM"
