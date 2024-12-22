@@ -75,16 +75,7 @@ class GroqClient:
             "top_p": top_p
         }
 
-        try:
-            # Send POST request to the Sambanova API
-            response = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=data)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            
-            result = response.json()
-            return result['choices'][0]['message']['content']  # Return the response content
-        except requests.exceptions.RequestException as e:
-            # Catch errors and return a useful message
-            raise Exception(f"Error while calling Sambanova API: {str(e)}")
+       
 
 # Instantiate the API clients
 sambanova_client = SambanovaClient(api_key=st.secrets["general"]["SAMBANOVA_API_KEY"], base_url="https://api.sambanova.ai/v1")
