@@ -13,21 +13,29 @@ import openai
 import pytz
 import time
 
-# Accessing the Sambanova API key from Streamlit secrets
+# API keys
 sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
 
+# Use the Sambanova API for Qwen 2.5-72B-Instruct and Meta-Llama-3.2-1B-Instruct
 class SambanovaClient:
     def __init__(self, api_key, base_url):
-        # Initialize with API key and base URL
         self.api_key = api_key
         self.base_url = base_url
+        openai.api_key = self.api_key
+        openai.api_base = self.base_url
 
     def chat(self, model, messages, temperature=0.7, top_p=1.0, max_tokens=500):
-        # Prepare headers and data for the API request
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
+        try:
+            response = openai.ChatCompletion.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                top_p=top_p
+            )
+            return response
+        except Exception as e:
+            raise Exception(f"Error while calling Sambanova API: {str(e)}")
 
         # Request payload
         data = {
@@ -38,20 +46,9 @@ class SambanovaClient:
             "top_p": top_p
         }
 
-        try:
-            # Send POST request to the Sambanova API
-            response = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=data)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            
-            result = response.json()
-            return result['choices'][0]['message']['content']  # Return the response content
-        except requests.exceptions.RequestException as e:
-            # Catch errors and return a useful message
-            raise Exception(f"Error while calling Sambanova API: {str(e)}")
+        
 
-# Initialize SambanovaClient with the API key fetched from secrets
-base_url = "https://api.sambanova.ai/v1"  # Correct Sambanova URL
-client = SambanovaClient(api_key=sambanova_api_key, base_url=base_url)
+
 
 # Hugging Face BLIP-2 Setup
 hf_token = "hf_rLRfVDnchDCuuaBFeIKTAbrptaNcsHUNM"
