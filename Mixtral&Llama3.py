@@ -267,13 +267,61 @@ selected_model_name = st.selectbox("Choose a model:", list(available_models.keys
 selected_model_id = available_models[selected_model_name]
 
 if selected_model_id:
-    # Proceed with model interaction
-    if input_method == "Upload PDF" or input_method == "Enter Text Manually":
-        if st.button("Summarize Text", key="summarize_button"):
-            st.write("Summarizing the text...")
-            summary = summarize_text(content, selected_model_id)
-            st.write("Summary:")
-            st.write(summary)
+    # Handle PDF and text manual input separately
+    if input_method == "Upload PDF":
+        # Step 1: Upload PDF and summarize the text
+        pdf_file = st.file_uploader("Upload PDF", type=["pdf"])
+        
+        if pdf_file:
+            # Extract text from PDF
+            pdf_text = extract_text_from_pdf(pdf_file)
+            content = pdf_text
+
+            # Display extracted text with adjusted font size
+            with st.expander("View Extracted Text"):
+                st.markdown(f"<div style='font-size: 14px;'>{pdf_text}</div>", unsafe_allow_html=True)
+
+            # Summarize the extracted text only when the button is clicked
+            if st.button("Summarize Text"):
+                st.write("Summarizing the text...")
+                summary = summarize_text(pdf_text, selected_model_id)
+                st.write("Summary:")
+                st.write(summary)
+
+                # Translate the summary to the selected language
+                translated_summary = translate_text(summary, selected_language, selected_model_id)
+                st.write(f"Translated Summary in {selected_language}:")
+                st.write(translated_summary)
+
+                # Convert summary to audio in English (not translated)
+                tts = gTTS(text=summary, lang='en')  # Use English summary for audio
+                tts.save("response.mp3")
+                st.audio("response.mp3", format="audio/mp3")
+                
+    elif input_method == "Enter Text Manually":
+        # Step 2: Manual Text Input and Summarize
+        manual_text = st.text_area("Enter your text manually:")
+
+        if manual_text:
+            # Assign entered text to content for chat
+            content = manual_text
+
+            if st.button("Summarize Text"):
+                st.write("Summarizing the entered text...")
+                summary = summarize_text(manual_text, selected_model_id)
+                st.write("Summary:")
+                st.write(summary)
+
+                # Translate the summary to the selected language
+                translated_summary = translate_text(summary, selected_language, selected_model_id)
+                st.write(f"Translated Summary in {selected_language}:")
+                st.write(translated_summary)
+
+                # Convert summary to audio in English (not translated)
+                tts = gTTS(text=summary, lang='en')  # Use English summary for audio
+                tts.save("response.mp3")
+                st.audio("response.mp3", format="audio/mp3")
+
 
 
 
@@ -295,28 +343,7 @@ languages = [
 ]
 selected_language = st.selectbox("Choose your preferred language for output", languages)
 
-# Input method selection
-input_method = st.radio("Select input method", ["Upload PDF", "Enter Text Manually"])
 
-if selected_model_id:
-    # Proceed with model interaction
-    if input_method == "Upload PDF":
-        uploaded_file = st.file_uploader("Choose a PDF file", type="pdf")
-        if uploaded_file is not None:
-            # Code to read and extract text from PDF
-            content = extract_text_from_pdf(uploaded_file)
-            st.write("PDF text extracted.")
-    elif input_method == "Enter Text Manually":
-        content = st.text_area("Enter text for summarization:")
-    
-    if content:  # Check if content has been populated from either method
-        if st.button("Summarize Text", key="summarize_button"):
-            st.write("Summarizing the text...")
-            summary = summarize_text(content, selected_model_id)
-            st.write("Summary:")
-            st.write(summary)
-    else:
-        st.warning("Please provide content for summarization.")
 
         # Display extracted text with adjusted font size
         with st.expander("View Extracted Text"):
