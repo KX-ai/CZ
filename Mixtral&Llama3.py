@@ -349,8 +349,8 @@ selected_language = st.selectbox("Choose your preferred language for output", la
 with st.expander("View Extracted Text"):
     st.markdown(f"<div style='font-size: 14px;'>{pdf_text}</div>", unsafe_allow_html=True)
 
-       # Assign extracted text to content for chat
-        content = pdf_text
+# Assign extracted text to content for chat
+content = pdf_text
 
 # Summarize the extracted text only when the button is clicked
 if st.button("Summarize Text"):
