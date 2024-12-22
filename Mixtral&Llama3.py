@@ -15,10 +15,7 @@ import time
 
 # Accessing the Sambanova API key from Streamlit secrets
 sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
-
-# Initialize SambanovaClient with the API key fetched from secrets
-base_url = "https://api.sambanova.ai/v1"  # Correct Sambanova URL
-client = SambanovaClient(api_key=sambanova_api_key, base_url=base_url)
+base_url = st.secrets["general"]["BASE_URL"]
 
 class SambanovaClient:
     def __init__(self, api_key, base_url):
