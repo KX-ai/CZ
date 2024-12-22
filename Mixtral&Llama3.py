@@ -50,7 +50,7 @@ def get_sambanova_response(model_name, user_input):
             
             result = response.json()
             return result['choices'][0]['message']['content']  # Return the response content
-        except requests.exceptions.RequestException as e:
+    except requests.exceptions.RequestException as e:
             # Catch errors and return a useful message
             raise Exception(f"Error while calling Sambanova API: {str(e)}")
 
