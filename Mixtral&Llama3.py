@@ -13,6 +13,11 @@ import openai
 import pytz
 import time
 
+headers = {
+    "Authorization": f"Bearer {os.environ.get('SAMBANOVA_API_KEY')}",
+    "Content-Type": "application/json"
+}
+
 # Accessing the Sambanova API key from Streamlit secrets
 sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
 
