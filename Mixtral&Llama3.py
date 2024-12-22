@@ -13,11 +13,6 @@ import openai
 import pytz
 import time
 
-headers = {
-    "Authorization": f"Bearer {os.environ.get('SAMBANOVA_API_KEY')}",
-    "Content-Type": "application/json"
-}
-
 # Accessing the Sambanova API key from Streamlit secrets
 sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
 
@@ -142,7 +137,23 @@ headers = {
     "Content-Type": "application/json"
 }
 
-# Function to Summarize Text
+
+import os
+import requests
+
+# Get the API key from the environment variable
+api_key = os.environ.get("SAMBANOVA_API_KEY")
+
+# Set the base URL for SambaNova's API
+base_url = "https://api.sambanova.ai/v1"
+
+# Include the Authorization header with the API key
+headers = {
+    "Authorization": f"Bearer {api_key}",
+    "Content-Type": "application/json"
+}
+
+# Function to Summarize the Text
 def summarize_text(text, model_id):
     url = f"{base_url}/chat/completions"
     data = {
@@ -157,6 +168,7 @@ def summarize_text(text, model_id):
     }
 
     try:
+        # Include headers in the POST request
         response = requests.post(url, headers=headers, json=data)
         if response.status_code == 200:
             result = response.json()
@@ -166,7 +178,8 @@ def summarize_text(text, model_id):
     except requests.exceptions.RequestException as e:
         return f"An error occurred: {e}"
 
-# Function to Translate Text
+
+# Function to Translate Text Using the Selected Model
 def translate_text(text, target_language, model_id):
     url = f"{base_url}/chat/completions"
     data = {
@@ -181,14 +194,16 @@ def translate_text(text, target_language, model_id):
     }
 
     try:
+        # Include headers in the POST request
         response = requests.post(url, headers=headers, json=data)
         if response.status_code == 200:
             result = response.json()
             return result['choices'][0]['message']['content']
         else:
-            return f"Translation error: {response.status_code}: {response.text}"
+            return f"Translation error: {response.status_code}"
     except requests.exceptions.RequestException as e:
         return f"An error occurred during translation: {e}"
+
 
 
 # Updated function to transcribe audio using the Groq Whisper API
