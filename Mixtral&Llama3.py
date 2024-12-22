@@ -16,10 +16,6 @@ import time
 # Accessing the Sambanova API key from Streamlit secrets
 sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
 
-# Initialize SambanovaClient with the API key fetched from secrets
-base_url = "https://api.sambanova.ai/v1"  # Correct Sambanova URL
-client = SambanovaClient(api_key=sambanova_api_key, base_url=base_url)
-
 class SambanovaClient:
     def __init__(self, api_key, base_url):
         # Initialize with API key and base URL
@@ -53,7 +49,9 @@ class SambanovaClient:
             # Catch errors and return a useful message
             raise Exception(f"Error while calling Sambanova API: {str(e)}")
 
-
+# Initialize SambanovaClient with the API key fetched from secrets
+base_url = "https://api.sambanova.ai/v1"  # Correct Sambanova URL
+client = SambanovaClient(api_key=sambanova_api_key, base_url=base_url)
 
 # Hugging Face BLIP-2 Setup
 hf_token = "hf_rLRfVDnchDCuuaBFeIKTAbrptaNcsHUNM"
