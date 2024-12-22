@@ -297,11 +297,12 @@ selected_model_id = available_models[selected_model_name]
 if selected_model_id:
     # Proceed with model interaction
     if input_method == "Upload PDF" or input_method == "Enter Text Manually":
-        if st.button("Summarize Text"):
-            st.write("Summarizing the text...")
-            summary = summarize_text(content, selected_model_id)
-            st.write("Summary:")
-            st.write(summary)
+        if st.button("Summarize Text", key="summarize_button"):
+    st.write("Summarizing the text...")
+    summary = summarize_text(content, selected_model_id)
+    st.write("Summary:")
+    st.write(summary)
+
 
 
 # Sidebar for interaction history
