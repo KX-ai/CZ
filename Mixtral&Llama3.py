@@ -16,33 +16,26 @@ import time
 # Accessing the Sambanova API key from Streamlit secrets
 sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
 
-# Initialize SambaNova API Client
+# Use the Sambanova API for Qwen 2.5-72B-Instruct and Meta-Llama-3.2-1B-Instruct
 class SambanovaClient:
     def __init__(self, api_key, base_url):
         self.api_key = api_key
         self.base_url = base_url
-    
+        openai.api_key = self.api_key
+        openai.api_base = self.base_url
+
     def chat(self, model, messages, temperature=0.7, top_p=1.0, max_tokens=500):
-        url = f"{self.base_url}/chat/completions"
-        data = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "top_p": top_p
-        }
-        
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-        
         try:
-            response = requests.post(url, headers=headers, json=data)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            return response.json()['choices'][0]['message']['content']
-        except requests.exceptions.RequestException as e:
-            raise Exception(f"Error while calling SambaNova API: {str(e)}")
+            response = openai.ChatCompletion.create(
+                model=model,
+                messages=messages,
+                temperature=temperature,
+                max_tokens=max_tokens,
+                top_p=top_p
+            )
+            return response
+        except Exception as e:
+            raise Exception(f"Error while calling Sambanova API: {str(e)}")
 
 # Initialize Groq API (this one handles Mixtral and Llama models)
 class GroqClient:
