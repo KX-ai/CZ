@@ -18,41 +18,35 @@ sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
 
 # Initialize SambanovaClient with the API key fetched from secrets
 base_url = "https://api.sambanova.ai/v1"  # Correct Sambanova URL
-client = SambanovaClient(api_key=sambanova_api_key, base_url=base_url)
 
+# Define the SambanovaClient class
 class SambanovaClient:
     def __init__(self, api_key, base_url):
         # Initialize with API key and base URL
         self.api_key = api_key
         self.base_url = base_url
 
-   # Define a function to send requests to the Sambanova API
-def get_sambanova_response(model_name, user_input):
-    headers = {
-        "Authorization": f"Bearer {sambanova_api_key}",
-        "Content-Type": "application/json"
-    }
-    
-    data = {
-        "model": model_name,
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant."},
-            {"role": "user", "content": user_input}
-        ],
-        "temperature": 0.1,
-        "top_p": 0.1
-    }
+    # Define a function to send requests to the Sambanova API
+    def get_sambanova_response(self, model_name, user_input):
+        headers = {
+            "Authorization": f"Bearer {self.api_key}",
+            "Content-Type": "application/json"
+        }
+        
+        data = {
+            "model": model_name,
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant."},
+                {"role": "user", "content": user_input}
+            ],
+            "temperature": 0.1,
+            "top_p": 0.1
+        }
 
-    try:
+        try:
             # Send POST request to the Sambanova API
             response = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=data)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            
-            result = response.json()
-            return result['choices'][0]['message']['content']  # Return the response content
-    except requests.exceptions.RequestException as e:
-            # Catch errors and return a useful message
-            raise Exception(f"Error while calling Sambanova API: {str(e)}")
+            response.raise_for_status()  # Raise an exce
 
 
 
