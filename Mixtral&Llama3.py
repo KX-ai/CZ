@@ -282,7 +282,7 @@ if input_method == "Upload PDF":
         summaries = []
         for i, chunk in enumerate(chunks):
             st.write(f"Processing chunk {i + 1} of {len(chunks)}...")
-            summary = summarize_text(chunk, selected_model_id)
+            summary = process_with_retry(summarize_text, chunk, selected_model_id)
             summaries.append(summary)
             st.write(f"Chunk {i + 1} Summary:")
             st.write(summary)
@@ -293,7 +293,7 @@ if input_method == "Upload PDF":
         st.write(combined_summary)
 
         # Translate the combined summary to the selected language
-        translated_summary = translate_text(combined_summary, selected_language, selected_model_id)
+        translated_summary = process_with_retry(translate_text, combined_summary, selected_language, selected_model_id)
         st.write(f"Translated Summary in {selected_language}:")
         st.write(translated_summary)
 
@@ -307,7 +307,7 @@ if input_method == "Upload PDF":
 progress = st.progress(0)
 for i, chunk in enumerate(chunks):
     st.write(f"Processing chunk {i + 1} of {len(chunks)}...")
-    summary = summarize_text(chunk, selected_model_id)
+    summary = process_with_retry(summarize_text, chunk, selected_model_id)
     summaries.append(summary)
     progress.progress((i + 1) / len(chunks))  # Update progress bar
 
@@ -338,14 +338,14 @@ else:
  # Summarize the extracted text only when the button is clicked
 if st.button("Summarize Text"):
     st.write("Summarizing the text...")
-    summary = summarize_text(pdf_text, selected_model_id)
+    summary = process_with_retry(summarize_text, chunk, selected_model_id)
     st.write("Summary:")
     st.write(summary)
 
     st.markdown("<hr>", unsafe_allow_html=True)  # Adds a horizontal line
 
     # Translate the summary to the selected language
-    translated_summary = translate_text(summary, selected_language, selected_model_id)
+   translated_summary = process_with_retry(translate_text, combined_summary, selected_language, selected_model_id)
     st.write(f"Translated Summary in {selected_language}:")
     st.write(translated_summary)
 
