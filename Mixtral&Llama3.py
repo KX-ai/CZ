@@ -392,14 +392,14 @@ elif input_method == "Upload Audio":
         st.error("Uploaded audio file is empty.")
 
 
-        # Transcribe using Groq's Whisper API
-        transcript = transcribe_audio(uploaded_audio)
-        if transcript:
-            st.write("Transcription:")
-            st.write(transcript)
-            content = transcript  # Set the transcription as content
-        else:
-            st.error("Failed to transcribe the audio.")
+# Transcribe using Groq's Whisper API
+transcript = transcribe_audio(uploaded_audio)
+if transcript:
+    st.write("Transcription:")
+    st.write(transcript)
+    content = transcript  # Set the transcription as content
+else:
+    st.error("Failed to transcribe the audio.")
         else:
             st.error("Please upload an audio file to proceed.")
 
