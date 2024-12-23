@@ -101,6 +101,8 @@ available_models = {
     "gemma2-9b-it": "gemma2-9b-it",
 }
 
+
+
 # Step 1: Function to Extract Text from PDF
 def extract_text_from_pdf(pdf_file):
     pdf_reader = PyPDF2.PdfReader(pdf_file)
@@ -254,6 +256,12 @@ languages = [
 ]
 selected_language = st.selectbox("Choose your preferred language for output", languages)
 
+# Function to update interaction history
+def update_history(interaction_data):
+    if "history" not in st.session_state:
+        st.session_state.history = []
+    st.session_state.history.append(interaction_data)
+
 if input_method == "Upload PDF":
     uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
 
@@ -325,6 +333,7 @@ interaction = {
     "translated_summary": translated_summary,
 }
 st.session_state.history.append(interaction)
+ update_history(interaction)  # Update history
 
 # Display extracted text with adjusted font size
 if uploaded_file:
