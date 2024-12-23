@@ -158,7 +158,7 @@ def translate_text(text, target_language, model_id):
         "top_p": 0.9
     }
 
-   try:
+try:
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
         result = response.json()
@@ -167,6 +167,7 @@ def translate_text(text, target_language, model_id):
         st.write(f"Error {response.status_code}: {response.text}")  # Use st.write() for errors
 except requests.exceptions.RequestException as e:
     st.write(f"An error occurred: {e}")  # Use st.write() for exceptions
+
 
 
 # Updated function to transcribe audio using the Groq Whisper API
