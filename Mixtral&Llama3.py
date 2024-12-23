@@ -345,7 +345,7 @@ if st.button("Summarize Text"):
     st.markdown("<hr>", unsafe_allow_html=True)  # Adds a horizontal line
 
     # Translate the summary to the selected language
-   translated_summary = process_with_retry(translate_text, combined_summary, selected_language, selected_model_id)
+    translated_summary = process_with_retry(translate_text, combined_summary, selected_language, selected_model_id)
     st.write(f"Translated Summary in {selected_language}:")
     st.write(translated_summary)
 
