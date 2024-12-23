@@ -501,16 +501,17 @@ if content and selected_model_id:
         "top_p": 0.9
     }
 
-    # Correct indentation after the try block
-try:
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        result = response.json()
-        return result['choices'][0]['message']['content']
-    else:
-        return f"Error {response.status_code}: {response.text}"
-except requests.exceptions.RequestException as e:
-    return f"An error occurred: {e}"
+def get_response_from_api(url, headers, data):
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            result = response.json()
+            return result['choices'][0]['message']['content']
+        else:
+            return f"Error {response.status_code}: {response.text}"
+    except requests.exceptions.RequestException as e:
+        return f"An error occurred: {e}"
+
 
 
 
