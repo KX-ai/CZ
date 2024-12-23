@@ -11,54 +11,13 @@ import json
 from io import BytesIO
 import openai
 import pytz
-import time
-
-# Accessing the Sambanova API key from Streamlit secrets
-sambanova_api_key = st.secrets["general"]["SAMBANOVA_API_KEY"]
-
-class SambanovaClient:
-    def __init__(self, api_key, base_url):
-        # Initialize with API key and base URL
-        self.api_key = api_key
-        self.base_url = base_url
-
-    def chat(self, model, messages, temperature=0.7, top_p=1.0, max_tokens=500):
-        # Prepare headers and data for the API request
-        headers = {
-            "Authorization": f"Bearer {self.api_key}",
-            "Content-Type": "application/json"
-        }
-
-        # Request payload
-        data = {
-            "model": model,
-            "messages": messages,
-            "temperature": temperature,
-            "max_tokens": max_tokens,
-            "top_p": top_p
-        }
-
-        try:
-            # Send POST request to the Sambanova API
-            response = requests.post(f"{self.base_url}/chat/completions", headers=headers, json=data)
-            response.raise_for_status()  # Raise an exception for HTTP errors
-            
-            result = response.json()
-            return result['choices'][0]['message']['content']  # Return the response content
-        except requests.exceptions.RequestException as e:
-            # Catch errors and return a useful message
-            raise Exception(f"Error while calling Sambanova API: {str(e)}")
-
-# Initialize SambanovaClient with the API key fetched from secrets
-base_url = "https://api.sambanova.ai/v1"  # Correct Sambanova URL
-client = SambanovaClient(api_key=sambanova_api_key, base_url=base_url)
 
 # Hugging Face BLIP-2 Setup
 hf_token = "hf_rLRfVDnchDCuuaBFeIKTAbrptaNcsHUNM"
 blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large", token=hf_token)
 blip_model = BlipForConditionalGeneration.from_pretrained("Salesforce/blip-image-captioning-large", token=hf_token)
 
-# Custom CSS for a more premium look
+# Custom CSS for a more premium look, including sticky button
 st.markdown("""
     <style>
         .css-1d391kg {
@@ -95,6 +54,20 @@ st.markdown("""
             margin-top: 50px;
             margin-bottom: 30px;
         }
+
+        /* Sticky Sidebar button CSS */
+        .stSidebar .css-1v0m2ju {
+            position: sticky;
+            top: 0;  /* Make it stick to the top of the sidebar */
+            z-index: 1000;  /* Ensure it stays on top of other elements */
+            background-color: #282c34;  /* Light background for the sidebar */
+            padding: 10px 0;  /* Some padding */
+        }
+        .stSidebar button {
+            position: sticky;
+            top: 20px;  /* Add some space from the top */
+            z-index: 1000;  /* Keep it above the scrollable content */
+        }
     </style>
 """, unsafe_allow_html=True)
 
@@ -114,9 +87,8 @@ headers = {
 # Available models, including the two new Sambanova models
 available_models = {
     "Mixtral 8x7b": "mixtral-8x7b-32768",
-    "Llama 3.1 70b Versatile": "llama-3.1-70b-versatile",
-    "Qwen 2.5-72B-Instruct": "sambanova-qwen-2.5-72b-instruct",
-    "Meta-Llama 3.2-1B-Instruct": "sambanova-meta-llama-3.2-1b-instruct"
+    "Llama-3.1-8b-instant": "llama-3.1-8b-instant",
+    "gemma2-9b-it": "gemma2-9b-it",
 }
 
 # Step 1: Function to Extract Text from PDF
@@ -263,49 +235,59 @@ languages = [
 ]
 selected_language = st.selectbox("Choose your preferred language for output", languages)
 
-# Handle different input methods
+# Step 1: Handle PDF Upload
 if input_method == "Upload PDF":
     uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
-
+    
     if uploaded_file:
         # Extract text from the uploaded PDF
         st.write("Extracting text from the uploaded PDF...")
         pdf_text = extract_text_from_pdf(uploaded_file)
         st.success("Text extracted successfully!")
-
+    
         # Display extracted text with adjusted font size
         with st.expander("View Extracted Text"):
             st.markdown(f"<div style='font-size: 14px;'>{pdf_text}</div>", unsafe_allow_html=True)
-
+    
         # Assign extracted text to content for chat
         content = pdf_text
+    else:
+        st.error("Please upload a PDF file to proceed.")
 
-        # Summarize the extracted text only when the button is clicked
-        if st.button("Summarize Text"):
-            st.write("Summarizing the text...")
-            summary = summarize_text(pdf_text, selected_model_id)
-            st.write("Summary:")
-            st.write(summary)
+    # Summarize the extracted text only when the button is clicked
+    if st.button("Summarize Text"):
+        st.write("Summarizing the text...")
 
-            # Translate the summary to the selected language
-            translated_summary = translate_text(summary, selected_language, selected_model_id)
-            st.write(f"Translated Summary in {selected_language}:")
-            st.write(translated_summary)
+        # Generate summary of extracted text
+        summary = summarize_text(pdf_text, selected_model_id)
+        st.write("Summary:")
+        st.write(summary)
 
-            # Convert summary to audio in English (not translated)
-            tts = gTTS(text=summary, lang='en')  # Use English summary for audio
-            tts.save("response.mp3")
-            st.audio("response.mp3", format="audio/mp3")
+        st.markdown("<hr>", unsafe_allow_html=True)  # Adds a horizontal line
 
+        # Translate the summary to the selected language
+        translated_summary = translate_text(summary, selected_language, selected_model_id)
+        st.write(f"Translated Summary in {selected_language}:")
+        st.write(translated_summary)
+
+        # Convert summary to audio (TTS) in English (for the summarized content)
+        tts = gTTS(text=summary, lang='en')  # Use English summary for audio
+        tts.save("response.mp3")
+        st.audio("response.mp3", format="audio/mp3")
+
+# Step 2: Handle Manual Text Input
 elif input_method == "Enter Text Manually":
     manual_text = st.text_area("Enter your text manually:")
 
-    if manual_text:
-        # Assign entered text to content for chat
+    if not manual_text:
+        st.error("Please enter some text to proceed.")
+    else:
         content = manual_text
 
         if st.button("Summarize Text"):
             st.write("Summarizing the entered text...")
+
+            # Generate summary of the entered text
             summary = summarize_text(manual_text, selected_model_id)
             st.write("Summary:")
             st.write(summary)
@@ -315,13 +297,13 @@ elif input_method == "Enter Text Manually":
             st.write(f"Translated Summary in {selected_language}:")
             st.write(translated_summary)
 
-            # Convert summary to audio in English (not translated)
+            # Convert summary to audio (TTS) in English (for the summarized content)
             tts = gTTS(text=summary, lang='en')  # Use English summary for audio
             tts.save("response.mp3")
             st.audio("response.mp3", format="audio/mp3")
 
-# Step 1: After uploading image or audio, user selects model for translation and Q&A
-if input_method == "Upload Image":
+# Step 3: Handle Image Upload
+elif input_method == "Upload Image":
     uploaded_image = st.file_uploader("Upload an image file", type=["jpg", "png"])
     
     if uploaded_image:
@@ -343,12 +325,13 @@ if input_method == "Upload Image":
         selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
         selected_model_id = available_models.get(selected_model_name)
 
+# Step 4: Handle Audio Upload
 elif input_method == "Upload Audio":
     uploaded_audio = st.file_uploader("Upload an audio file", type=["mp3", "wav"])
 
     if uploaded_audio:
         st.write("Audio file uploaded. Processing audio...")
-        
+
         # Transcribe using Groq's Whisper API
         transcript = transcribe_audio(uploaded_audio)
         if transcript:
@@ -357,24 +340,24 @@ elif input_method == "Upload Audio":
             content = transcript  # Set the transcription as content
         else:
             st.error("Failed to transcribe the audio.")
+    else:
+        st.error("Please upload an audio file to proceed.")
 
-        # Select a model for translation and Q&A
-        selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="audio_model_selection")
-        selected_model_id = available_models.get(selected_model_name)
+    # Select a model for translation and Q&A
+    selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="audio_model_selection")
+    selected_model_id = available_models.get(selected_model_name)
 
 # Translation of the extracted text to selected language
 if content:
     translated_content = translate_text(content, selected_language, selected_model_id)
-    st.write(f"Translated content in {selected_language}:")
-    st.write(translated_content)
 
     # Convert the translated content to speech (if needed)
     tts = gTTS(text=translated_content, lang='en')  # For demonstration in English
     tts.save("translated_response.mp3")
     st.audio("translated_response.mp3", format="audio/mp3")
 
+# Step 5: Allow user to ask questions about the content (if any)
 if content and selected_model_id:
-    # If the user is ready to ask a question, show a text input box
     if len(st.session_state.history) == 0 or st.session_state.history[-1]["response"]:  # If the previous response is done
         question = st.text_input("Ask a question about the content:")
 
@@ -386,18 +369,14 @@ if content and selected_model_id:
             # Prepare the interaction data for history tracking
             interaction = {
                 "time": current_time,
-                "input_method": "Text Input",  # You can change this based on how the user submits questions
+                "input_method": input_method,
                 "question": question,
                 "response": "",
-                "content_preview": content[:100] if content else "No content available",
-                "start_time": None,  # Will be set later when the model is selected
+                "content_preview": content[:100] if content else "No content available"
             }
 
             # Add the user question to the history
             st.session_state.history.append(interaction)
-
-            # Set the start time only when the user selects the model and sends the question
-            st.session_state.history[-1]["start_time"] = time.time()  # Start time when user asks question after selecting model
 
             # Send the question along with the content to the selected model API for the response
             url = f"{base_url}/chat/completions"
@@ -422,15 +401,8 @@ if content and selected_model_id:
                     # Store the model's answer in the interaction history
                     st.session_state.history[-1]["response"] = answer
 
-                    # Calculate processing time by subtracting start_time from current time
-                    end_time = time.time()  # Capture the time when the response is received
-                    processing_time = end_time - st.session_state.history[-1]["start_time"]
-
                     # Display the model's response
                     st.write(f"Answer: {answer}")
-
-                    # Display the processing time below the model's answer
-                    st.write(f"Processing Time: {processing_time:.2f} seconds")
 
                 else:
                     st.write(f"Error {response.status_code}: {response.text}")
@@ -441,16 +413,81 @@ if content and selected_model_id:
         # If there's already a response from the model, ask for follow-up questions
         st.write("You can ask more questions or clarify any points.")
 
+# Add "Start a New Chat" button to the sidebar
+if st.sidebar.button("Start a New Chat"):
+    # Clear all session state variables related to the current chat
+    st.session_state['content'] = ''  # Clear the current extracted text
+    st.session_state['uploaded_file'] = None  # Clear any uploaded PDF
+    st.session_state['uploaded_audio'] = None  # Clear any uploaded audio
+    st.session_state['manual_text'] = ''  # Clear any manually entered text
+    st.session_state['uploaded_image'] = None  # Clear any uploaded image
+    st.session_state['selected_model_id'] = None  # Clear model selection
+    st.session_state['selected_language'] = "English"  # Optionally reset the language
+    st.session_state['history'] = []  # Clear the chat history
 
-# Step 3: Display interaction history in the sidebar
-if st.session_state.history:
+    # Also clear any content that might have been summarized or translated
+    st.session_state['summary'] = ''  # Clear any previously summarized text
+    st.session_state['translated_summary'] = ''  # Clear any previously translated summary
+    st.session_state['translated_content'] = ''  # Clear any translated content
+    st.session_state['audio_file'] = None  # Clear any audio content generated for speech
+    
+    # Reset input method and model selection
+    st.session_state['input_method'] = None
+    st.session_state['selected_model_name'] = None  # Reset model selection
+    st.session_state['manual_text'] = ''
+    
+    # Reset extracted content (which could be from PDF, image, audio)
+    st.session_state['extracted_text'] = ''  # Clear extracted text from any source
+
+    # Optionally, reset UI components like dropdowns or text fields
+    st.rerun()  # Refresh the app to reflect the changes
+
+
+
+
+
+# Sidebar header for the chat history
+if "history" in st.session_state and st.session_state.history:
     st.sidebar.header("Interaction History")
+    # Display each interaction with a clickable link
     for idx, interaction in enumerate(st.session_state.history):
-        st.sidebar.markdown(f"**{interaction['time']}**")
-        st.sidebar.markdown(f"**Input Method**: {interaction['input_method']}")
-        st.sidebar.markdown(f"**Question**: {interaction['question']}")
-        st.sidebar.markdown(f"**Response**: {interaction['response']}")
-        st.sidebar.markdown(f"**Content Preview**: {interaction['content_preview']}")
-        st.sidebar.markdown("---")
+        # Create a clickable link for each interaction in the history
+        with st.sidebar.expander(f"Interaction {idx + 1} - {interaction['time']}"):
+            st.markdown(f"*Input Method*: {interaction['input_method']}")
+            st.markdown(f"*Question*: {interaction['question']}")
+            st.markdown(f"*Response*: {interaction['response']}")
+            st.markdown(f"*Content Preview*: {interaction['content_preview']}")
 
+            # Optionally, display more details when clicking on each entry
+            if interaction['response']:
+                st.markdown("---")
+                st.markdown(f"*Full Content*: {interaction['content_preview']}")
+                st.markdown(f"*Answer*: {interaction['response']}")
+                # You can add any additional details, like translation or summary
+                # Example of adding the full content if it was summarized or translated
+                if 'translated_summary' in interaction and interaction['translated_summary']:
+                    st.markdown(f"*Translated Summary*: {interaction['translated_summary']}")
+                if 'audio_file' in interaction and interaction['audio_file']:
+                    st.audio(interaction['audio_file'], format="audio/mp3")
+else:
+    st.sidebar.write("No interactions to display.")
 
+# Main section to allow user to view previous interaction content (click interaction to display it)
+if 'history' in st.session_state and len(st.session_state.history) > 0:
+    # Select interaction from history for display
+    interaction_idx = st.selectbox("Select an Interaction to Review", range(len(st.session_state.history)))
+    selected_interaction = st.session_state.history[interaction_idx]
+    
+    # Display full details of selected interaction
+    st.subheader(f"Interaction {interaction_idx + 1} Details")
+    st.write(f"*Time*: {selected_interaction['time']}")
+    st.write(f"*Input Method*: {selected_interaction['input_method']}")
+    st.write(f"*Question*: {selected_interaction['question']}")
+    st.write(f"*Response*: {selected_interaction['response']}")
+    st.write(f"*Content Preview*: {selected_interaction['content_preview']}")
+    
+    # Optionally, you can add more sections for the full content or any other detail (e.g., translations, audio, etc.)
+    if 'translated_summary' in selected_interaction and selected_interaction['translated_summary']:
+        st.write(f"*Translated Summary*: {selected_interaction['translated_summary']}")
+    if 'audio_file' in selected_interaction and selected_interaction['audio_file']:
+        st.audio(selected_interaction['audio_file'], format="audio/mp3")
