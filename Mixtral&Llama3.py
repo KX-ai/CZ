@@ -501,19 +501,21 @@ else:
     try:
                 response = requests.post(url, headers=headers, json=data)
                 if response.status_code == 200:
-                    result = response.json()
+                                        result = response.json()
                     answer = result['choices'][0]['message']['content']
 
-                    # Store the model's answer in the interaction history
+                    # Display the answer to the user
+                    st.write("Answer:")
+                    st.write(answer)
+
+                    # Update the interaction with the user's question and the model's response
+                    st.session_state.history[-1]["question"] = question
                     st.session_state.history[-1]["response"] = answer
+                else:
+                    st.error(f"Error {response.status_code}: {response.text}")
+    except requests.exceptions.RequestException as e:
+        st.error(f"An error occurred while processing your question: {e}")
 
-                    # Display the model's response
-                    st.write(f"Answer: {answer}")
-
-        else:
-                    st.write(f"Error {response.status_code}: {response.text}")
-            except requests.exceptions.RequestException as e:
-                st.write(f"An error occurred: {e}")
         
         else:
         # If there's already a response from the model, ask for follow-up questions
