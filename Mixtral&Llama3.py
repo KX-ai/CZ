@@ -333,7 +333,7 @@ interaction = {
     "translated_summary": translated_summary,
 }
 st.session_state.history.append(interaction)
- update_history(interaction)  # Update history
+update_history(interaction)  # Update history
 
 # Display extracted text with adjusted font size
 if uploaded_file:
