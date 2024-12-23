@@ -84,6 +84,14 @@ def extract_text_from_pdf(pdf_file):
     for page in pdf_reader.pages:
         extracted_text += page.extract_text()
     return extracted_text
+# Function to split text into chunks based on the model's token limit
+def split_text_into_chunks(text, max_tokens, overlap=200):
+    tokens = text.split()  # Tokenize text into words
+    chunks = []
+    for i in range(0, len(tokens), max_tokens - overlap):
+        chunk = " ".join(tokens[i:i + max_tokens])
+        chunks.append(chunk)
+    return chunks
 
 
 # Function to Summarize the Text
@@ -222,7 +230,6 @@ languages = [
 ]
 selected_language = st.selectbox("Choose your preferred language for output", languages)
 
-# Step 1: Handle PDF Upload
 if input_method == "Upload PDF":
     uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
     
@@ -231,6 +238,66 @@ if input_method == "Upload PDF":
         st.write("Extracting text from the uploaded PDF...")
         pdf_text = extract_text_from_pdf(uploaded_file)
         st.success("Text extracted successfully!")
+    
+        # Display extracted text with adjusted font size
+        with st.expander("View Extracted Text"):
+            st.markdown(f"<div style='font-size: 14px;'>{pdf_text}</div>", unsafe_allow_html=True)
+    
+        # Chunk the text based on the model's context length
+        model_token_limits = {
+            "mixtral-8x7b-32768": 5000,
+            "llama-3.1-8b-instant": 20000,
+            "gemma2-9b-it": 15000,
+        }
+        token_limit = model_token_limits[selected_model_id]
+        chunks = split_text_into_chunks(pdf_text, token_limit)
+        
+        st.write(f"PDF text split into {len(chunks)} chunks for processing.")
+        
+        # Summarize each chunk
+        summaries = []
+        for i, chunk in enumerate(chunks):
+            st.write(f"Processing chunk {i + 1} of {len(chunks)}...")
+            summary = summarize_text(chunk, selected_model_id)
+            summaries.append(summary)
+            st.write(f"Chunk {i + 1} Summary:")
+            st.write(summary)
+
+        # Combine all summaries into a single summary
+        combined_summary = " ".join(summaries)
+        st.write("Combined Summary:")
+        st.write(combined_summary)
+
+        # Translate the combined summary to the selected language
+        translated_summary = translate_text(combined_summary, selected_language, selected_model_id)
+        st.write(f"Translated Summary in {selected_language}:")
+        st.write(translated_summary)
+
+        # Convert the combined summary to audio
+        tts = gTTS(text=combined_summary, lang='en')  # Use English summary for audio
+        tts.save("response.mp3")
+        st.audio("response.mp3", format="audio/mp3")
+
+# Add a progress bar for chunk processing
+progress = st.progress(0)
+for i, chunk in enumerate(chunks):
+    st.write(f"Processing chunk {i + 1} of {len(chunks)}...")
+    summary = summarize_text(chunk, selected_model_id)
+    summaries.append(summary)
+    progress.progress((i + 1) / len(chunks))  # Update progress bar
+# Track chunk summaries in history
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+interaction = {
+    "time": datetime.now(pytz.timezone("Asia/Kuala_Lumpur")).strftime("%Y-%m-%d %H:%M:%S"),
+    "input_method": input_method,
+    "chunk_summaries": summaries,
+    "combined_summary": combined_summary,
+    "translated_summary": translated_summary,
+}
+st.session_state.history.append(interaction)
+
     
         # Display extracted text with adjusted font size
         with st.expander("View Extracted Text"):
@@ -409,10 +476,13 @@ if st.sidebar.button("Start a New Chat"):
 # Sidebar header for the chat history
 if "history" in st.session_state and st.session_state.history:
     st.sidebar.header("Interaction History")
-    for idx, interaction in enumerate(st.session_state.history):
-        st.sidebar.markdown(f"**{interaction['time']}**")
-        st.sidebar.markdown(f"**Input Method**: {interaction['input_method']}")
-        st.sidebar.markdown(f"**Question**: {interaction['question']}")
-        st.sidebar.markdown(f"**Response**: {interaction['response']}")
-        st.sidebar.markdown(f"**Content Preview**: {interaction['content_preview']}")
-        st.sidebar.markdown("---")
+   # Update sidebar history to show chunk summaries
+for idx, interaction in enumerate(st.session_state.history):
+    st.sidebar.markdown(f"**{interaction['time']}**")
+    st.sidebar.markdown(f"**Input Method**: {interaction['input_method']}")
+    st.sidebar.markdown(f"**Combined Summary**: {interaction['combined_summary']}")
+    st.sidebar.markdown("**Chunk Summaries:**")
+    for chunk_summary in interaction["chunk_summaries"]:
+        st.sidebar.markdown(f"- {chunk_summary}")
+    st.sidebar.markdown("---")
+
