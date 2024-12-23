@@ -333,10 +333,6 @@ elif input_method == "Upload Audio":
 if content:
     translated_content = translate_text(content, selected_language, selected_model_id)
 
-    # Convert the translated content to speech (if needed)
-    tts = gTTS(text=translated_content, lang='en')  # For demonstration in English
-    tts.save("translated_response.mp3")
-    st.audio("translated_response.mp3", format="audio/mp3")
 
 # Step 5: Allow user to ask questions about the content (if any)
 if content and selected_model_id:
