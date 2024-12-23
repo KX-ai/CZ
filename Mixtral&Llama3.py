@@ -159,7 +159,7 @@ def translate_text(text, target_language, model_id):
     }
 
     try:
-    response = requests.post(url, headers=headers, json=data)
+       response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
         result = response.json()
         st.write(result['choices'][0]['message']['content'])  # Use st.write() instead of return
