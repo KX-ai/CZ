@@ -158,8 +158,8 @@ def translate_text(text, target_language, model_id):
         "top_p": 0.9
     }
 
-    try:
-       response = requests.post(url, headers=headers, json=data)
+   try:
+    response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
         result = response.json()
         st.write(result['choices'][0]['message']['content'])  # Use st.write() instead of return
