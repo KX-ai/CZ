@@ -13,9 +13,6 @@ import openai
 import pytz
 import time
 
-# Input Method Selection
-input_method = st.selectbox("Select Input Method", ["Upload PDF", "Upload Audio", "Upload Image"])
-
 # Create interaction and append to history after significant actions
 def update_history(interaction_data):
     # Append interaction data to history in session state
@@ -264,7 +261,8 @@ def extract_text_from_image(image_file):
 
     return caption
 
-
+# Input Method Selection
+input_method = st.selectbox("Select Input Method", ["Upload PDF", "Upload Audio", "Upload Image"])
 
 # Model selection - Available only for PDF and manual text input
 if input_method in ["Upload PDF"]:
@@ -612,4 +610,3 @@ def ask_question(question):
 if send_button:
     ask_question(question)
     
-
