@@ -512,14 +512,11 @@ if content and selected_model_id:
             st.session_state.history[-1]["response"] = answer
         else:
             st.error(f"Error {response.status_code}: {response.text}")
-    except requests.exceptions.RequestException as e:
-        st.error(f"An error occurred while processing your question: {e}")
+   except requests.exceptions.RequestException as e:
+    st.error(f"An error occurred while processing your question: {e}")
 
-
-        
-        else:
-        # If there's already a response from the model, ask for follow-up questions
-        st.write("You can ask more questions or clarify any points.")
+    # If there's already a response from the model, ask for follow-up questions
+    st.write("You can ask more questions or clarify any points.")
 
 # Add "Start a New Chat" button to the sidebar
 if st.sidebar.button("Start a New Chat"):
