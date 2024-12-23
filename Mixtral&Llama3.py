@@ -205,10 +205,10 @@ def extract_text_from_image(image_file):
     return caption
 
 # Input Method Selection
-input_method = st.selectbox("Select Input Method", ["Upload PDF", "Enter Text Manually", "Upload Audio", "Upload Image"])
+input_method = st.selectbox("Select Input Method", ["Upload PDF", "Upload Audio", "Upload Image"])
 
 # Model selection - Available only for PDF and manual text input
-if input_method in ["Upload PDF", "Enter Text Manually"]:
+if input_method in ["Upload PDF"]:
     selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
     
     # Ensure that the user selects a model (no default)
@@ -338,31 +338,6 @@ if st.button("Summarize Text"):
     tts.save("response.mp3")
     st.audio("response.mp3", format="audio/mp3")
 
-# Step 2: Handle Manual Text Input
-elif input_method == "Enter Text Manually":
-    manual_text = st.text_area("Enter your text manually:")
-
-    if not manual_text:
-        st.error("Please enter some text to proceed.")
-    else:
-        content = manual_text
-
-        if st.button("Summarize Text"):
-            st.write("Summarizing the entered text...")
-            summary = summarize_text(manual_text, selected_model_id)
-            st.write("Summary:")
-            st.write(summary)
-
-
-            # Translate the summary to the selected language
-            translated_summary = translate_text(summary, selected_language, selected_model_id)
-            st.write(f"Translated Summary in {selected_language}:")
-            st.write(translated_summary)
-
-            # Convert summary to audio in English (not translated)
-            tts = gTTS(text=summary, lang='en')  # Use English summary for audio
-            tts.save("response.mp3")
-            st.audio("response.mp3", format="audio/mp3")
 
 # Step 3: Handle Image Upload
 elif input_method == "Upload Image":
