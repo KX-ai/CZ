@@ -409,7 +409,8 @@ if content:
 
 # Step 5: Allow user to ask questions about the content (if any)
 if content and selected_model_id:
-    if len(st.session_state.history) == 0 or st.session_state.history[-1]["response"]:  # If the previous response is done
+    # Check if the history is not empty and if the last entry has a "response" key
+    if len(st.session_state.history) == 0 or "response" not in st.session_state.history[-1] or st.session_state.history[-1]["response"]:
         question = st.text_input("Ask a question about the content:")
 
         if question:
@@ -459,10 +460,10 @@ if content and selected_model_id:
                     st.write(f"Error {response.status_code}: {response.text}")
             except requests.exceptions.RequestException as e:
                 st.write(f"An error occurred: {e}")
-        
     else:
         # If there's already a response from the model, ask for follow-up questions
         st.write("You can ask more questions or clarify any points.")
+
 
 # Add "Start a New Chat" button to the sidebar
 if st.sidebar.button("Start a New Chat"):
