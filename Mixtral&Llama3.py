@@ -229,6 +229,7 @@ def extract_text_from_image(image_file):
 input_method = st.selectbox("Select Input Method", ["Upload PDF", "Enter Text Manually", "Upload Audio", "Upload Image"])
 
 # Model selection - Available only for PDF and manual text input
+# Model selection - Available only for PDF and manual text input
 if input_method in ["Upload PDF", "Enter Text Manually"]:
     selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
     
@@ -240,6 +241,35 @@ if input_method in ["Upload PDF", "Enter Text Manually"]:
         selected_model_id = None
 else:
     selected_model_id = None
+
+# Ensure selected_model_id is valid before making API requests
+if selected_model_id is None:
+    st.error("No model selected. Please select a model to proceed.")
+else:
+    # Proceed with the API request
+    url = f"{base_url}/chat/completions"
+    data = {
+        "model": selected_model_id,
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
+            {"role": "system", "content": content},
+            {"role": "user", "content": question}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 200,
+        "top_p": 0.9
+    }
+
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            result = response.json()
+            st.write(result['choices'][0]['message']['content'])
+        else:
+            st.write(f"Error {response.status_code}: {response.text}")
+    except requests.exceptions.RequestException as e:
+        st.write(f"An error occurred: {e}")
+
 
 # Sidebar for interaction history
 # Ensure history is initialized in session state
