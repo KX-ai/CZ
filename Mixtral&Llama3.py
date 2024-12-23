@@ -232,17 +232,17 @@ selected_language = st.selectbox("Choose your preferred language for output", la
 
 if input_method == "Upload PDF":
     uploaded_file = st.file_uploader("Upload a PDF file", type=["pdf"])
-    
+
     if uploaded_file:
         # Extract text from the uploaded PDF
         st.write("Extracting text from the uploaded PDF...")
         pdf_text = extract_text_from_pdf(uploaded_file)
         st.success("Text extracted successfully!")
-    
+
         # Display extracted text with adjusted font size
         with st.expander("View Extracted Text"):
             st.markdown(f"<div style='font-size: 14px;'>{pdf_text}</div>", unsafe_allow_html=True)
-    
+
         # Chunk the text based on the model's context length
         model_token_limits = {
             "mixtral-8x7b-32768": 5000,
@@ -251,9 +251,9 @@ if input_method == "Upload PDF":
         }
         token_limit = model_token_limits[selected_model_id]
         chunks = split_text_into_chunks(pdf_text, token_limit)
-        
+
         st.write(f"PDF text split into {len(chunks)} chunks for processing.")
-        
+
         # Summarize each chunk
         summaries = []
         for i, chunk in enumerate(chunks):
@@ -277,6 +277,7 @@ if input_method == "Upload PDF":
         tts = gTTS(text=combined_summary, lang='en')  # Use English summary for audio
         tts.save("response.mp3")
         st.audio("response.mp3", format="audio/mp3")
+
 
 # Add a progress bar for chunk processing
 progress = st.progress(0)
