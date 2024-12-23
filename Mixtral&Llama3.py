@@ -486,7 +486,7 @@ else:
 
     # Send the question along with the content to the selected model API for the response
     url = f"{base_url}/chat/completions"
-            data = {
+    data = {
                 "model": selected_model_id,
                 "messages": [
                     {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
@@ -498,7 +498,7 @@ else:
                 "top_p": 0.9
             }
 
-            try:
+    try:
                 response = requests.post(url, headers=headers, json=data)
                 if response.status_code == 200:
                     result = response.json()
@@ -510,7 +510,7 @@ else:
                     # Display the model's response
                     st.write(f"Answer: {answer}")
 
-                else:
+    else:
                     st.write(f"Error {response.status_code}: {response.text}")
             except requests.exceptions.RequestException as e:
                 st.write(f"An error occurred: {e}")
