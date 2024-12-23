@@ -301,7 +301,6 @@ if "history" not in st.session_state:
 interaction = {
     "time": datetime.now(pytz.timezone("Asia/Kuala_Lumpur")).strftime("%Y-%m-%d %H:%M:%S"),
     "input_method": input_method,
-    "chunk_summaries": summaries,
     "combined_summary": combined_summary,
     "translated_summary": translated_summary,
     "response": ""  # Initialize response as an empty string or placeholder
@@ -491,12 +490,11 @@ if st.sidebar.button("Start a New Chat"):
 if "history" in st.session_state and st.session_state.history:
     st.sidebar.header("Interaction History")
     
-    # Update sidebar history to show chunk summaries
+    # Update sidebar history to show only combined summary
     for idx, interaction in enumerate(st.session_state.history):
         st.sidebar.markdown(f"**{interaction['time']}**")
         st.sidebar.markdown(f"**Input Method**: {interaction['input_method']}")
         st.sidebar.markdown(f"**Combined Summary**: {interaction['combined_summary']}")
-        st.sidebar.markdown("**Chunk Summaries:**")
-        for chunk_summary in interaction["chunk_summaries"]:
-            st.sidebar.markdown(f"- {chunk_summary}")
+        st.sidebar.markdown(f"**Translated Summary**: {interaction['translated_summary']}")
         st.sidebar.markdown("---")
+
