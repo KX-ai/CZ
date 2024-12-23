@@ -400,8 +400,8 @@ elif input_method == "Upload Audio":
             content = transcript  # Set the transcription as content
         else:
             st.error("Failed to transcribe the audio.")
-    else:
-        st.error("Please upload an audio file to proceed.")
+        else:
+            st.error("Please upload an audio file to proceed.")
 
     # Select a model for translation and Q&A
     selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="audio_model_selection")
