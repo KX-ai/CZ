@@ -510,12 +510,12 @@ else:
                     # Display the model's response
                     st.write(f"Answer: {answer}")
 
-    else:
+        else:
                     st.write(f"Error {response.status_code}: {response.text}")
             except requests.exceptions.RequestException as e:
                 st.write(f"An error occurred: {e}")
         
-    else:
+        else:
         # If there's already a response from the model, ask for follow-up questions
         st.write("You can ask more questions or clarify any points.")
 
