@@ -13,9 +13,6 @@ import openai
 import pytz
 import time
 
-content = ""
-selected_model_id = "some_model_id"  # This should be set to a valid model ID
-
 # Define the retry logic function at the top
 def process_with_retry(api_call_func, *args, **kwargs):
     try:
@@ -121,31 +118,29 @@ def split_text_into_chunks(text, max_tokens, overlap=200):
     return chunks
 
 
-# Send the question along with the content to the selected model API for the response
-url = f"{base_url}/chat/completions"
-data = {
-    "model": selected_model_id,
-    "messages": [
-        {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
-        {"role": "system", "content": content},
-        {"role": "user", "content": question}
-    ],
-    "temperature": 0.7,
-    "max_tokens": 200,
-    "top_p": 0.9
-}
+# Function to Summarize the Text
+def summarize_text(text, model_id):
+    url = f"{base_url}/chat/completions"
+    data = {
+        "model": model_id,
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant. Summarize the following text:"},
+            {"role": "user", "content": text}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 300,
+        "top_p": 0.9
+    }
 
-# Correct indentation after the try block
-try:
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        result = response.json()
-        st.write(result['choices'][0]['message']['content'])
-    else:
-        st.write(f"Error {response.status_code}: {response.text}")
-except requests.exceptions.RequestException as e:
-    st.write(f"An error occurred: {e}")
-
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            result = response.json()
+            return result['choices'][0]['message']['content']
+        else:
+            return f"Error {response.status_code}: {response.text}"
+    except requests.exceptions.RequestException as e:
+        return f"An error occurred: {e}"
 
 # Function to Translate Text Using the Selected Model
 def translate_text(text, target_language, model_id):
@@ -161,17 +156,15 @@ def translate_text(text, target_language, model_id):
         "top_p": 0.9
     }
 
-try:
-    response = requests.post(url, headers=headers, json=data)
-    if response.status_code == 200:
-        result = response.json()
-        st.write(result['choices'][0]['message']['content'])  # Use st.write() instead of return
-    else:
-        st.write(f"Error {response.status_code}: {response.text}")  # Use st.write() for errors
-except requests.exceptions.RequestException as e:
-    st.write(f"An error occurred: {e}")  # Use st.write() for exceptions
-
-
+    try:
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            result = response.json()
+            return result['choices'][0]['message']['content']
+        else:
+            return f"Translation error: {response.status_code}"
+    except requests.exceptions.RequestException as e:
+        return f"An error occurred during translation: {e}"
 
 # Updated function to transcribe audio using the Groq Whisper API
 def transcribe_audio(file):
@@ -232,7 +225,6 @@ def extract_text_from_image(image_file):
 input_method = st.selectbox("Select Input Method", ["Upload PDF", "Enter Text Manually", "Upload Audio", "Upload Image"])
 
 # Model selection - Available only for PDF and manual text input
-# Model selection - Available only for PDF and manual text input
 if input_method in ["Upload PDF", "Enter Text Manually"]:
     selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
     
@@ -245,49 +237,18 @@ if input_method in ["Upload PDF", "Enter Text Manually"]:
 else:
     selected_model_id = None
 
-# Ensure selected_model_id is valid before making API requests
-if selected_model_id is None:
-    st.error("No model selected. Please select a model to proceed.")
-else:
-    # Proceed with the API request
-    url = f"{base_url}/chat/completions"
-    data = {
-        "model": selected_model_id,
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
-            {"role": "system", "content": content},
-            {"role": "user", "content": question}
-        ],
-        "temperature": 0.7,
-        "max_tokens": 200,
-        "top_p": 0.9
-    }
-
-    try:
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            result = response.json()
-            st.write(result['choices'][0]['message']['content'])
-        else:
-            st.write(f"Error {response.status_code}: {response.text}")
-    except requests.exceptions.RequestException as e:
-        st.write(f"An error occurred: {e}")
-
-
 # Sidebar for interaction history
 # Ensure history is initialized in session state
-# Ensure 'history' is initialized in session state
 if "history" not in st.session_state:
     st.session_state.history = []  # Initialize as an empty list
 
-# Safely check history and 'response' key
+# Check and safely access history
 if len(st.session_state.history) == 0:
     st.write("No history available yet.")
 elif "response" in st.session_state.history[-1]:
     st.write("Processing the latest response...")
 else:
-    st.warning("The last history entry does not contain a 'response' key.")
-
+    st.warning("The last history entry does not contain a response.")
 
 
 
@@ -384,7 +345,8 @@ if uploaded_file:
 else:
     st.error("Please upload a PDF file to proceed.")
 
-# Summarize the extracted text only when the button is clicked
+
+ # Summarize the extracted text only when the button is clicked
 if st.button("Summarize Text"):
     st.write("Summarizing the text...")
     summary = summarize_text(pdf_text, selected_model_id)
@@ -418,6 +380,7 @@ elif input_method == "Enter Text Manually":
             st.write("Summary:")
             st.write(summary)
 
+
             # Translate the summary to the selected language
             translated_summary = translate_text(summary, selected_language, selected_model_id)
             st.write(f"Translated Summary in {selected_language}:")
@@ -450,7 +413,6 @@ elif input_method == "Upload Image":
         # Select a model for translation and Q&A
         selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
         selected_model_id = available_models.get(selected_model_name)
-
 # Step 4: Handle Audio Upload
 elif input_method == "Upload Audio":
     uploaded_audio = st.file_uploader("Upload an audio file", type=["mp3", "wav"])
@@ -482,14 +444,7 @@ if content:
 
 # Step 5: Allow user to ask questions about the content (if any)
 if content and selected_model_id:
-    # Ensure 'history' is initialized in session state
-    if "history" not in st.session_state:
-        st.session_state.history = []  # Initialize as an empty list
-
-    # Check if history is empty or if the last entry has a 'response' key
-    if len(st.session_state.history) == 0 or (
-        len(st.session_state.history) > 0 and "response" in st.session_state.history[-1]
-    ):
+    if len(st.session_state.history) == 0 or st.session_state.history[-1]["response"]:  # If the previous response is done
         question = st.text_input("Ask a question about the content:")
 
         if question:
@@ -497,59 +452,52 @@ if content and selected_model_id:
             malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
             current_time = datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
 
-            # Example: Store the question and timestamp in the history
-            st.session_state.history.append({"question": question, "timestamp": current_time})
+            # Prepare the interaction data for history tracking
+            interaction = {
+                "time": current_time,
+                "input_method": input_method,
+                "question": question,
+                "response": "",
+                "content_preview": content[:100] if content else "No content available"
+            }
 
-            # Display the question and time for confirmation
-            st.write(f"Question logged at {current_time}: {question}")
+            # Add the user question to the history
+            st.session_state.history.append(interaction)
+
+            # Send the question along with the content to the selected model API for the response
+            url = f"{base_url}/chat/completions"
+            data = {
+                "model": selected_model_id,
+                "messages": [
+                    {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
+                    {"role": "system", "content": content},
+                    {"role": "user", "content": question}
+                ],
+                "temperature": 0.7,
+                "max_tokens": 200,
+                "top_p": 0.9
+            }
+
+            try:
+                response = requests.post(url, headers=headers, json=data)
+                if response.status_code == 200:
+                    result = response.json()
+                    answer = result['choices'][0]['message']['content']
+
+                    # Store the model's answer in the interaction history
+                    st.session_state.history[-1]["response"] = answer
+
+                    # Display the model's response
+                    st.write(f"Answer: {answer}")
+
+                else:
+                    st.write(f"Error {response.status_code}: {response.text}")
+            except requests.exceptions.RequestException as e:
+                st.write(f"An error occurred: {e}")
+        
     else:
-        st.warning("The last history entry is not ready or does not have a 'response'.")
-
-    # Prepare the interaction data for history tracking
-    malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
-    current_time = datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
-
-    interaction = {
-        "time": current_time,
-        "input_method": "unknown",  # Set this based on your application's context
-        "question": "",
-        "response": "",
-        "content_preview": content[:100] if content else "No content available",
-    }
-
-    # Add the user question to the history
-    st.session_state.history.append(interaction)
-
-    # Send the question along with the content to the selected model API for the response
-    url = f"{base_url}/chat/completions"
-    data = {
-        "model": selected_model_id,
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
-            {"role": "system", "content": content},
-            {"role": "user", "content": question}
-        ],
-        "temperature": 0.7,
-        "max_tokens": 200,
-        "top_p": 0.9
-    }
-
-def get_response_from_api(url, headers, data):
-    try:
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            result = response.json()
-            return result['choices'][0]['message']['content']
-        else:
-            return f"Error {response.status_code}: {response.text}"
-    except requests.exceptions.RequestException as e:
-        return f"An error occurred: {e}"
-
-
-
-
-    # If there's already a response from the model, ask for follow-up questions
-    st.write("You can ask more questions or clarify any points.")
+        # If there's already a response from the model, ask for follow-up questions
+        st.write("You can ask more questions or clarify any points.")
 
 # Add "Start a New Chat" button to the sidebar
 if st.sidebar.button("Start a New Chat"):
