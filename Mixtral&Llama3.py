@@ -15,6 +15,7 @@ import pytz
 chunks = []
 # Initialize the summaries list
 summaries = []
+combined_summary = ""  # Initialize as an empty string or a placeholder
 
 # Hugging Face BLIP-2 Setup
 hf_token = "hf_rLRfVDnchDCuuaBFeIKTAbrptaNcsHUNM"
