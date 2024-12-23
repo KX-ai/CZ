@@ -11,6 +11,23 @@ import json
 from io import BytesIO
 import openai
 import pytz
+import time
+
+# Define the retry logic function at the top
+def process_with_retry(api_call_func, *args, **kwargs):
+    try:
+        # Try the API call
+        return api_call_func(*args, **kwargs)
+    except Exception as e:
+        # Handle rate limit error
+        if "rate_limit_exceeded" in str(e).lower():
+            # Extract wait time from error message, here it is set to 21.5 seconds as an example
+            wait_time = 21.5
+            print(f"Rate limit exceeded. Waiting for {wait_time} seconds...")
+            time.sleep(wait_time)  # Wait for the rate limit to reset
+            return process_with_retry(api_call_func, *args, **kwargs)  # Retry the operation
+        else:
+            raise e  # Raise other errors
 
 chunks = []
 # Initialize the summaries list
