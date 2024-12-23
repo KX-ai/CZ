@@ -118,29 +118,31 @@ def split_text_into_chunks(text, max_tokens, overlap=200):
     return chunks
 
 
-# Function to Summarize the Text
-def summarize_text(text, model_id):
-    url = f"{base_url}/chat/completions"
-    data = {
-        "model": model_id,
-        "messages": [
-            {"role": "system", "content": "You are a helpful assistant. Summarize the following text:"},
-            {"role": "user", "content": text}
-        ],
-        "temperature": 0.7,
-        "max_tokens": 300,
-        "top_p": 0.9
-    }
+# Send the question along with the content to the selected model API for the response
+url = f"{base_url}/chat/completions"
+data = {
+    "model": selected_model_id,
+    "messages": [
+        {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
+        {"role": "system", "content": content},
+        {"role": "user", "content": question}
+    ],
+    "temperature": 0.7,
+    "max_tokens": 200,
+    "top_p": 0.9
+}
 
-    try:
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            result = response.json()
-            return result['choices'][0]['message']['content']
-        else:
-            return f"Error {response.status_code}: {response.text}"
-    except requests.exceptions.RequestException as e:
-        return f"An error occurred: {e}"
+# Correct indentation after the try block
+try:
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        result = response.json()
+        st.write(result['choices'][0]['message']['content'])
+    else:
+        st.write(f"Error {response.status_code}: {response.text}")
+except requests.exceptions.RequestException as e:
+    st.write(f"An error occurred: {e}")
+
 
 # Function to Translate Text Using the Selected Model
 def translate_text(text, target_language, model_id):
