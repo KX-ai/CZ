@@ -304,8 +304,10 @@ interaction = {
     "chunk_summaries": summaries,
     "combined_summary": combined_summary,
     "translated_summary": translated_summary,
+    "response": ""  # Initialize response as an empty string or placeholder
 }
 st.session_state.history.append(interaction)
+
 
 # Display extracted text with adjusted font size
 if uploaded_file:
