@@ -476,13 +476,15 @@ if st.sidebar.button("Start a New Chat"):
 # Sidebar header for the chat history
 if "history" in st.session_state and st.session_state.history:
     st.sidebar.header("Interaction History")
-   # Update sidebar history to show chunk summaries
-for idx, interaction in enumerate(st.session_state.history):
-    st.sidebar.markdown(f"**{interaction['time']}**")
-    st.sidebar.markdown(f"**Input Method**: {interaction['input_method']}")
-    st.sidebar.markdown(f"**Combined Summary**: {interaction['combined_summary']}")
-    st.sidebar.markdown("**Chunk Summaries:**")
-    for chunk_summary in interaction["chunk_summaries"]:
-        st.sidebar.markdown(f"- {chunk_summary}")
-    st.sidebar.markdown("---")
+    
+    # Update sidebar history to show chunk summaries
+    for idx, interaction in enumerate(st.session_state.history):
+        st.sidebar.markdown(f"**{interaction['time']}**")
+        st.sidebar.markdown(f"**Input Method**: {interaction['input_method']}")
+        st.sidebar.markdown(f"**Combined Summary**: {interaction['combined_summary']}")
+        st.sidebar.markdown("**Chunk Summaries:**")
+        for chunk_summary in interaction["chunk_summaries"]:
+            st.sidebar.markdown(f"- {chunk_summary}")
+        st.sidebar.markdown("---")
+
 
