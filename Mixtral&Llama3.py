@@ -11,30 +11,10 @@ import json
 from io import BytesIO
 import openai
 import pytz
-import time
-
-# Define the retry logic function at the top
-def process_with_retry(api_call_func, *args, **kwargs):
-    try:
-        # Try the API call
-        return api_call_func(*args, **kwargs)
-    except Exception as e:
-        # Handle rate limit error
-        if "rate_limit_exceeded" in str(e).lower():
-            # Extract wait time from error message, here it is set to 21.5 seconds as an example
-            wait_time = 21.5
-            print(f"Rate limit exceeded. Waiting for {wait_time} seconds...")
-            time.sleep(wait_time)  # Wait for the rate limit to reset
-            return process_with_retry(api_call_func, *args, **kwargs)  # Retry the operation
-        else:
-            raise e  # Raise other errors
 
 chunks = []
 # Initialize the summaries list
 summaries = []
-combined_summary = ""  # Initialize as an empty string or a placeholder
-# Initialize translated_summary
-translated_summary = ""  # Initialize as an empty string or placeholder
 
 # Hugging Face BLIP-2 Setup
 hf_token = "hf_rLRfVDnchDCuuaBFeIKTAbrptaNcsHUNM"
@@ -238,19 +218,8 @@ else:
     selected_model_id = None
 
 # Sidebar for interaction history
-# Initialize session state for 'history' if it doesn't exist
 if "history" not in st.session_state:
-    st.session_state.history = []  # Initialize as an empty list
-
-# Check for response key safely
-if len(st.session_state.history) == 0 or (
-    len(st.session_state.history) > 0 and "response" in st.session_state.history[-1]
-):
-    # If the previous response is done, perform your logic
-    pass
-else:
-    st.warning("No response available in the previous history entry.")
-
+    st.session_state.history = []
 
 # Initialize content variable
 content = ""
