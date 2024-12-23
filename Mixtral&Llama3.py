@@ -450,32 +450,35 @@ if content and selected_model_id:
     if "history" not in st.session_state:
         st.session_state.history = []  # Initialize as an empty list
 
-    # Check if history is empty or if the last entry has a 'response' key
-    if len(st.session_state.history) == 0 or (
-        len(st.session_state.history) > 0 and "response" in st.session_state.history[-1]
-    ):
-        question = st.text_input("Ask a question about the content:")
+   # Check if history is empty or if the last entry has a 'response' key
+if len(st.session_state.history) == 0 or (
+    len(st.session_state.history) > 0 and "response" in st.session_state.history[-1]
+):
+    question = st.text_input("Ask a question about the content:")
 
-        if question:
-            # Set the timezone to Malaysia for the timestamp
-            malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
-            current_time = datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
+    if question:
+        # Set the timezone to Malaysia for the timestamp
+        malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
+        current_time = datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
 
-            # Example: Store the question and timestamp in the history
-            st.session_state.history.append({"question": question, "timestamp": current_time})
+        # Example: Store the question and timestamp in the history
+        st.session_state.history.append({"question": question, "timestamp": current_time})
 
-            # Display the question and time for confirmation
-            st.write(f"Question logged at {current_time}: {question}")
-  else:
+        # Display the question and time for confirmation
+        st.write(f"Question logged at {current_time}: {question}")
+else:
     st.warning("The last history entry is not ready or does not have a 'response'.")
 
     # Prepare the interaction data for history tracking
+    malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
+    current_time = datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
+
     interaction = {
         "time": current_time,
-        "input_method": input_method,
-        "question": question,
+        "input_method": "unknown",  # Set this based on your application's context
+        "question": "",
         "response": "",
-        "content_preview": content[:100] if content else "No content available"
+        "content_preview": content[:100] if content else "No content available",
     }
 
             # Add the user question to the history
