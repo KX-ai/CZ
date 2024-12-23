@@ -12,6 +12,8 @@ from io import BytesIO
 import openai
 import pytz
 
+chunks = []
+
 # Hugging Face BLIP-2 Setup
 hf_token = "hf_rLRfVDnchDCuuaBFeIKTAbrptaNcsHUNM"
 blip_processor = BlipProcessor.from_pretrained("Salesforce/blip-image-captioning-large", token=hf_token)
@@ -383,8 +385,12 @@ elif input_method == "Upload Image":
 elif input_method == "Upload Audio":
     uploaded_audio = st.file_uploader("Upload an audio file", type=["mp3", "wav"])
 
-    if uploaded_audio:
+   
+    if uploaded_audio.size > 0:
         st.write("Audio file uploaded. Processing audio...")
+    else:
+        st.error("Uploaded audio file is empty.")
+
 
         # Transcribe using Groq's Whisper API
         transcript = transcribe_audio(uploaded_audio)
