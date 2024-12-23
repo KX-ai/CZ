@@ -300,8 +300,8 @@ interaction = {
 st.session_state.history.append(interaction)
 
     
-        # Display extracted text with adjusted font size
-        with st.expander("View Extracted Text"):
+    # Display extracted text with adjusted font size
+    with st.expander("View Extracted Text"):
             st.markdown(f"<div style='font-size: 14px;'>{pdf_text}</div>", unsafe_allow_html=True)
     
         # Assign extracted text to content for chat
