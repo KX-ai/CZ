@@ -85,29 +85,6 @@ def extract_text_from_pdf(pdf_file):
         extracted_text += page.extract_text()
     return extracted_text
 
-# Function to estimate token count
-def estimate_token_count(text):
-    # Approximation: 1 token ≈ 4 characters for English text
-    return len(text) // 4
-
-# Model context lengths
-model_context_lengths = {
-    "mixtral-8x7b-32768": 32768,
-    "llama-3.1-8b-instant": 128000,
-    "gemma2-9b-it": 8192,
-}
-
-# Display token estimation and warn if content exceeds context length
-if content and selected_model_id:
-    token_count = estimate_token_count(content)
-    max_tokens = model_context_lengths.get(selected_model_id, 8192)  # Default to 8192 if model ID is not in the dict
-
-    st.write(f"Estimated token count: {token_count}")
-    st.write(f"Model '{selected_model_name}' max token length: {max_tokens}")
-
-    if token_count > max_tokens:
-        st.error(f"Warning: The input content exceeds the maximum token length for the selected model ({max_tokens} tokens). Consider summarizing or splitting the content.")
-
 
 # Function to Summarize the Text
 def summarize_text(text, model_id):
