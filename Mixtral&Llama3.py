@@ -13,6 +13,8 @@ import openai
 import pytz
 import time
 
+selected_model_id = "some_model_id"  # This should be set to a valid model ID
+
 # Define the retry logic function at the top
 def process_with_retry(api_call_func, *args, **kwargs):
     try:
