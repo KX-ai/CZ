@@ -13,6 +13,7 @@ import openai
 import pytz
 import time
 
+content = ""
 selected_model_id = "some_model_id"  # This should be set to a valid model ID
 
 # Define the retry logic function at the top
