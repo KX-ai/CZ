@@ -239,16 +239,18 @@ else:
 
 # Sidebar for interaction history
 # Ensure history is initialized in session state
+# Ensure 'history' is initialized in session state
 if "history" not in st.session_state:
     st.session_state.history = []  # Initialize as an empty list
 
-# Check and safely access history
+# Safely check history and 'response' key
 if len(st.session_state.history) == 0:
     st.write("No history available yet.")
 elif "response" in st.session_state.history[-1]:
     st.write("Processing the latest response...")
 else:
-    st.warning("The last history entry does not contain a response.")
+    st.warning("The last history entry does not contain a 'response' key.")
+
 
 
 
@@ -444,13 +446,28 @@ if content:
 
 # Step 5: Allow user to ask questions about the content (if any)
 if content and selected_model_id:
-    if len(st.session_state.history) == 0 or st.session_state.history[-1]["response"]:  # If the previous response is done
+    # Ensure 'history' is initialized in session state
+    if "history" not in st.session_state:
+        st.session_state.history = []  # Initialize as an empty list
+
+    # Check if history is empty or if the last entry has a 'response' key
+    if len(st.session_state.history) == 0 or (
+        len(st.session_state.history) > 0 and "response" in st.session_state.history[-1]
+    ):
         question = st.text_input("Ask a question about the content:")
 
         if question:
             # Set the timezone to Malaysia for the timestamp
             malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
             current_time = datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
+
+            # Example: Store the question and timestamp in the history
+            st.session_state.history.append({"question": question, "timestamp": current_time})
+
+            # Display the question and time for confirmation
+            st.write(f"Question logged at {current_time}: {question}")
+    else:
+        st.warning("The last history entry is not ready or does not have a 'response'.")
 
             # Prepare the interaction data for history tracking
             interaction = {
