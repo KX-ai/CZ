@@ -497,7 +497,8 @@ if content and selected_model_id:
         "top_p": 0.9
     }
 
-    try:
+    # Correct indentation after the try block
+try:
     response = requests.post(url, headers=headers, json=data)
     if response.status_code == 200:
         result = response.json()
@@ -506,6 +507,7 @@ if content and selected_model_id:
         return f"Error {response.status_code}: {response.text}"
 except requests.exceptions.RequestException as e:
     return f"An error occurred: {e}"
+
 
 
     # If there's already a response from the model, ask for follow-up questions
