@@ -467,23 +467,103 @@ if content and selected_model_id:
         st.write("You can ask more questions or clarify any points.")
 
 
-# Add "Start a New Chat" button to the sidebar
-if st.sidebar.button("Start a New Chat"):
-    # Only clear the current chat-related variables, NOT the history
-    st.session_state['content'] = ''  # Clear the current content
-    st.session_state['uploaded_file'] = None  # Clear any uploaded PDF
-    st.session_state['uploaded_audio'] = None  # Clear any uploaded audio
-    st.session_state['manual_text'] = ''  # Clear any manually entered text
-    st.session_state['uploaded_image'] = None  # Clear any uploaded image
-    st.session_state['selected_model_id'] = None  # Clear model selection
-    st.session_state['selected_language'] = "English"  # Optionally reset the language
-    
-    # Optionally, reset UI components, such as resetting dropdowns or text fields
-    st.rerun()  # Refresh the app to reflect the changes
-
-# Sidebar header for the chat history
+# Display the interaction history in the sidebar with clickable expanders
 if "history" in st.session_state and st.session_state.history:
     st.sidebar.header("Interaction History")
+    
+    # Add the "Clear History" button to reset the interaction history
+    if st.sidebar.button("Clear History"):
+        # Clear the history and content from session state
+        st.session_state['history'] = []
+        st.session_state['content'] = ''
+        st.session_state['question_input'] = ''
+        st.sidebar.success("History has been cleared!")
+        st.rerun()  # Refresh the app to reflect the changes
+
+    # Display the history with expanders
+    for idx, interaction in enumerate(st.session_state.history):
+        with st.sidebar.expander(f"Interaction {idx+1} - {interaction['time']}"):
+            st.markdown(f"*Question*: {interaction['question']}")
+            st.markdown(f"*Response*: {interaction['response']}")
+            st.markdown(f"*Content Preview*: {interaction['content_preview']}")
+
+            # Add a button to let the user pick this interaction to continue
+            if st.button(f"Continue with Interaction {idx+1}", key=f"continue_{idx}"):
+                # Load the selected interaction into the current session state for continuation
+                st.session_state['content'] = interaction['response']  # Set the response as current content
+                st.session_state['question_input'] = interaction['question']  # Load the last question as the input text
+                
+                # Do not add a new history entry; just continue from the last response
+                st.session_state['history'] = st.session_state['history'][:idx+1]  # Keep the history up to the selected interaction
+                st.rerun()  # Rerun the app to update the chat flow
+
+# Add "Start a New Chat" button to the sidebar
+if st.sidebar.button("Start a New Chat"):
+    # Reset the content and history for starting fresh
+    st.session_state['content'] = ''
+    st.session_state['history'] = []
+    st.session_state['question_input'] = ''
+    st.rerun()  # Refresh the app to reflect the changes
+
+# Text area input with placeholder "Message Botify" without extra label
+question = st.text_area("", 
+                        st.session_state.get('question_input', ''),  # Use session state for preserving input
+                        key="question_input", 
+                        placeholder="Message Botify",  # Placeholder text
+                        height=150)  # Adjust the height as needed
+
+# Add a "Send" button styled with an arrow
+send_button = st.button("Send", key="send_button", help="Click to send your message")
+
+# Function to handle question submission and API request
+def ask_question(question):
+    if question and selected_model_id:
+        # Prepare the request payload
+        url = f"{base_url}/chat/completions"
+        data = {
+            "model": selected_model_id,
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
+                {"role": "system", "content": st.session_state['content']},  # Use the current content as context
+                {"role": "user", "content": question}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 200,
+            "top_p": 0.9
+        }
+
+        try:
+            # Send request to the API
+            response = requests.post(url, headers=headers, json=data)
+            if response.status_code == 200:
+                result = response.json()
+                answer = result['choices'][0]['message']['content']
+
+                # Track the interaction history
+                malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
+                current_time = datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
+                interaction = {
+                    "time": current_time,
+                    "question": question,
+                    "response": answer,
+                    "content_preview": st.session_state['content'][:100] if st.session_state['content'] else "No content available"
+                }
+                if "history" not in st.session_state:
+                    st.session_state.history = []
+                st.session_state.history.append(interaction)  # Add a new entry only when the user sends a new question
+
+                # Display the answer
+                st.write(f"Answer: {answer}")
+                # Update content with the latest answer
+                st.session_state['content'] += f"\n{question}: {answer}"
+            else:
+                st.write(f"Error {response.status_code}: {response.text}")
+        except requests.exceptions.RequestException as e:
+            st.write(f"An error occurred: {e}")
+
+# Ask the question when the "Send" button is pressed
+if send_button:
+    ask_question(question)
     
     # Update sidebar history to show chunk summaries
     for idx, interaction in enumerate(st.session_state.history):
