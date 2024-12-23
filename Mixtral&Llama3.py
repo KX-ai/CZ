@@ -481,8 +481,8 @@ else:
         "content_preview": content[:100] if content else "No content available",
     }
 
-            # Add the user question to the history
-            st.session_state.history.append(interaction)
+    # Add the user question to the history
+        st.session_state.history.append(interaction)
 
             # Send the question along with the content to the selected model API for the response
             url = f"{base_url}/chat/completions"
