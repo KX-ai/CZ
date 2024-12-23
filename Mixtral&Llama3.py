@@ -290,6 +290,9 @@ if input_method == "Upload PDF":
         combined_summary = " ".join(summaries)
         st.write("Combined Summary:")
         st.write(combined_summary)
+        # Add a horizontal line between the summaries
+        st.markdown("<hr>", unsafe_allow_html=True)
+
 
         # Translate the combined summary to the selected language
         translated_summary = process_with_retry(translate_text, combined_summary, selected_language, selected_model_id)
