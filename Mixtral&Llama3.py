@@ -400,7 +400,7 @@ if transcript:
     content = transcript  # Set the transcription as content
 else:
     st.error("Failed to transcribe the audio.")
-else:
+if not uploaded_audio:
             st.error("Please upload an audio file to proceed.")
 
     # Select a model for translation and Q&A
