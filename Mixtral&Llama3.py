@@ -238,8 +238,19 @@ else:
     selected_model_id = None
 
 # Sidebar for interaction history
+# Initialize session state for 'history' if it doesn't exist
 if "history" not in st.session_state:
-    st.session_state.history = []
+    st.session_state.history = []  # Initialize as an empty list
+
+# Check for response key safely
+if len(st.session_state.history) == 0 or (
+    len(st.session_state.history) > 0 and "response" in st.session_state.history[-1]
+):
+    # If the previous response is done, perform your logic
+    pass
+else:
+    st.warning("No response available in the previous history entry.")
+
 
 # Initialize content variable
 content = ""
