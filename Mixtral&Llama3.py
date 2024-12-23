@@ -20,9 +20,6 @@ def update_history(interaction_data):
         st.session_state.history = []
     st.session_state.history.append(interaction_data)
 
-# Input Method Selection
-input_method = st.selectbox("Select Input Method", ["Upload PDF", "Upload Audio", "Upload Image"])
-
 # Example when summarizing chunks
 if input_method == "Upload PDF" and uploaded_file:
     for i, chunk in enumerate(chunks):
@@ -264,6 +261,8 @@ def extract_text_from_image(image_file):
 
     return caption
 
+# Input Method Selection
+input_method = st.selectbox("Select Input Method", ["Upload PDF", "Upload Audio", "Upload Image"])
 
 # Model selection - Available only for PDF and manual text input
 if input_method in ["Upload PDF"]:
@@ -610,4 +609,3 @@ def ask_question(question):
 # Ask the question when the "Send" button is pressed
 if send_button:
     ask_question(question)
-    
