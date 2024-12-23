@@ -380,32 +380,29 @@ elif input_method == "Upload Image":
         # Select a model for translation and Q&A
         selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
         selected_model_id = available_models.get(selected_model_name)
-
 # Step 4: Handle Audio Upload
 elif input_method == "Upload Audio":
     uploaded_audio = st.file_uploader("Upload an audio file", type=["mp3", "wav"])
 
-   
     if uploaded_audio.size > 0:
         st.write("Audio file uploaded. Processing audio...")
+        
+        # Transcribe using Groq's Whisper API
+        transcript = transcribe_audio(uploaded_audio)
+        if transcript:
+            st.write("Transcription:")
+            st.write(transcript)
+            content = transcript  # Set the transcription as content
+        else:
+            st.error("Failed to transcribe the audio.")
+            
     else:
         st.error("Uploaded audio file is empty.")
-
-
-# Transcribe using Groq's Whisper API
-transcript = transcribe_audio(uploaded_audio)
-if transcript:
-    st.write("Transcription:")
-    st.write(transcript)
-    content = transcript  # Set the transcription as content
-else:
-    st.error("Failed to transcribe the audio.")
-if not uploaded_audio:
-            st.error("Please upload an audio file to proceed.")
 
     # Select a model for translation and Q&A
     selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="audio_model_selection")
     selected_model_id = available_models.get(selected_model_name)
+
 
 # Translation of the extracted text to selected language
 if content:
