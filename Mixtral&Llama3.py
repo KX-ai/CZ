@@ -286,6 +286,7 @@ for i, chunk in enumerate(chunks):
     summary = summarize_text(chunk, selected_model_id)
     summaries.append(summary)
     progress.progress((i + 1) / len(chunks))  # Update progress bar
+
 # Track chunk summaries in history
 if "history" not in st.session_state:
     st.session_state.history = []
@@ -299,15 +300,16 @@ interaction = {
 }
 st.session_state.history.append(interaction)
 
-    
-    # Display extracted text with adjusted font size
+# Display extracted text with adjusted font size
+if uploaded_file:
     with st.expander("View Extracted Text"):
-            st.markdown(f"<div style='font-size: 14px;'>{pdf_text}</div>", unsafe_allow_html=True)
-    
-        # Assign extracted text to content for chat
-        content = pdf_text
-    else:
-        st.error("Please upload a PDF file to proceed.")
+        st.markdown(f"<div style='font-size: 14px;'>{pdf_text}</div>", unsafe_allow_html=True)
+
+    # Assign extracted text to content for chat
+    content = pdf_text
+else:
+    st.error("Please upload a PDF file to proceed.")
+
 
     # Summarize the extracted text only when the button is clicked
     if st.button("Summarize Text"):
