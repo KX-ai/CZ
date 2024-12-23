@@ -498,22 +498,15 @@ if content and selected_model_id:
     }
 
     try:
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            result = response.json()
-            answer = result['choices'][0]['message']['content']
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        result = response.json()
+        return result['choices'][0]['message']['content']
+    else:
+        return f"Error {response.status_code}: {response.text}"
+except requests.exceptions.RequestException as e:
+    return f"An error occurred: {e}"
 
-            # Display the answer to the user
-            st.write("Answer:")
-            st.write(answer)
-
-            # Update the interaction with the user's question and the model's response
-            st.session_state.history[-1]["question"] = question
-            st.session_state.history[-1]["response"] = answer
-        else:
-            st.error(f"Error {response.status_code}: {response.text}")
-   except requests.exceptions.RequestException as e:
-    st.error(f"An error occurred while processing your question: {e}")
 
     # If there's already a response from the model, ask for follow-up questions
     st.write("You can ask more questions or clarify any points.")
