@@ -284,8 +284,7 @@ if input_method == "Upload PDF":
             st.write(f"Processing chunk {i + 1} of {len(chunks)}...")
             summary = process_with_retry(summarize_text, chunk, selected_model_id)
             summaries.append(summary)
-            st.write(f"Chunk {i + 1} Summary:")
-            st.write(summary)
+            
 
         # Combine all summaries into a single summary
         combined_summary = " ".join(summaries)
