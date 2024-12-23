@@ -13,6 +13,46 @@ import openai
 import pytz
 import time
 
+# Create interaction and append to history after significant actions
+def update_history(interaction_data):
+    # Append interaction data to history in session state
+    if "history" not in st.session_state:
+        st.session_state.history = []
+    st.session_state.history.append(interaction_data)
+
+# Example when summarizing chunks
+if input_method == "Upload PDF" and uploaded_file:
+    for i, chunk in enumerate(chunks):
+        # Perform summarization logic
+        summary = process_with_retry(summarize_text, chunk, selected_model_id)
+        summaries.append(summary)
+        progress.progress((i + 1) / len(chunks))  # Update progress bar
+
+    # Create the combined summary after all chunks are processed
+    combined_summary = " ".join(summaries)
+    st.write("Combined Summary:")
+    st.write(combined_summary)
+
+    # Add translated summary
+    translated_summary = process_with_retry(translate_text, combined_summary, selected_language, selected_model_id)
+    st.write(f"Translated Summary in {selected_language}:")
+    st.write(translated_summary)
+
+    # Create the interaction record with the appropriate data
+    interaction = {
+        "time": datetime.now(pytz.timezone("Asia/Kuala_Lumpur")).strftime("%Y-%m-%d %H:%M:%S"),
+        "input_method": input_method,
+        "chunk_summaries": summaries,
+        "combined_summary": combined_summary,
+        "translated_summary": translated_summary,
+        "response": "",  # Ensure a response field even if empty
+    }
+
+    update_history(interaction)  # Update history
+
+    # Now history is properly tracked and can be shown in sidebar or elsewhere
+
+
 # Define the retry logic function at the top
 def process_with_retry(api_call_func, *args, **kwargs):
     try:
