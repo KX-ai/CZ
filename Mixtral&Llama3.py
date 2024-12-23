@@ -238,18 +238,18 @@ else:
     selected_model_id = None
 
 # Sidebar for interaction history
-# Ensure history is initialized in session state
+# Initialize session state for 'history' if it doesn't exist
 if "history" not in st.session_state:
     st.session_state.history = []  # Initialize as an empty list
 
-# Check and safely access history
-if len(st.session_state.history) == 0:
-    st.write("No history available yet.")
-elif "response" in st.session_state.history[-1]:
-    st.write("Processing the latest response...")
+# Check for response key safely
+if len(st.session_state.history) == 0 or (
+    len(st.session_state.history) > 0 and "response" in st.session_state.history[-1]
+):
+    # If the previous response is done, perform your logic
+    pass
 else:
-    st.warning("The last history entry does not contain a response.")
-
+    st.warning("No response available in the previous history entry.")
 
 
 # Initialize content variable
