@@ -482,7 +482,7 @@ else:
     }
 
     # Add the user question to the history
-        st.session_state.history.append(interaction)
+    st.session_state.history.append(interaction)
 
             # Send the question along with the content to the selected model API for the response
             url = f"{base_url}/chat/completions"
