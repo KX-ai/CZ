@@ -13,6 +13,8 @@ import openai
 import pytz
 
 chunks = []
+# Initialize the summaries list
+summaries = []
 
 # Hugging Face BLIP-2 Setup
 hf_token = "hf_rLRfVDnchDCuuaBFeIKTAbrptaNcsHUNM"
