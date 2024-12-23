@@ -466,17 +466,17 @@ if content and selected_model_id:
 
             # Display the question and time for confirmation
             st.write(f"Question logged at {current_time}: {question}")
-    else:
-        st.warning("The last history entry is not ready or does not have a 'response'.")
+  else:
+    st.warning("The last history entry is not ready or does not have a 'response'.")
 
-            # Prepare the interaction data for history tracking
-            interaction = {
-                "time": current_time,
-                "input_method": input_method,
-                "question": question,
-                "response": "",
-                "content_preview": content[:100] if content else "No content available"
-            }
+    # Prepare the interaction data for history tracking
+    interaction = {
+        "time": current_time,
+        "input_method": input_method,
+        "question": question,
+        "response": "",
+        "content_preview": content[:100] if content else "No content available"
+    }
 
             # Add the user question to the history
             st.session_state.history.append(interaction)
