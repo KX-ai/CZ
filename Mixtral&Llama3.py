@@ -205,10 +205,10 @@ def extract_text_from_image(image_file):
     return caption
 
 # Input Method Selection
-input_method = st.selectbox("Select Input Method", ["Upload PDF", "Upload Audio", "Upload Image"])
+input_method = st.selectbox("Select Input Method", ["Upload PDF", "Enter Text Manually", "Upload Audio", "Upload Image"])
 
 # Model selection - Available only for PDF and manual text input
-if input_method in ["Upload PDF"]:
+if input_method in ["Upload PDF", "Enter Text Manually"]:
     selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
     
     # Ensure that the user selects a model (no default)
@@ -301,6 +301,7 @@ if "history" not in st.session_state:
 interaction = {
     "time": datetime.now(pytz.timezone("Asia/Kuala_Lumpur")).strftime("%Y-%m-%d %H:%M:%S"),
     "input_method": input_method,
+    "chunk_summaries": summaries,
     "combined_summary": combined_summary,
     "translated_summary": translated_summary,
     "response": ""  # Initialize response as an empty string or placeholder
@@ -338,6 +339,31 @@ if st.button("Summarize Text"):
     tts.save("response.mp3")
     st.audio("response.mp3", format="audio/mp3")
 
+# Step 2: Handle Manual Text Input
+elif input_method == "Enter Text Manually":
+    manual_text = st.text_area("Enter your text manually:")
+
+    if not manual_text:
+        st.error("Please enter some text to proceed.")
+    else:
+        content = manual_text
+
+        if st.button("Summarize Text"):
+            st.write("Summarizing the entered text...")
+            summary = summarize_text(manual_text, selected_model_id)
+            st.write("Summary:")
+            st.write(summary)
+
+
+            # Translate the summary to the selected language
+            translated_summary = translate_text(summary, selected_language, selected_model_id)
+            st.write(f"Translated Summary in {selected_language}:")
+            st.write(translated_summary)
+
+            # Convert summary to audio in English (not translated)
+            tts = gTTS(text=summary, lang='en')  # Use English summary for audio
+            tts.save("response.mp3")
+            st.audio("response.mp3", format="audio/mp3")
 
 # Step 3: Handle Image Upload
 elif input_method == "Upload Image":
@@ -465,11 +491,12 @@ if st.sidebar.button("Start a New Chat"):
 if "history" in st.session_state and st.session_state.history:
     st.sidebar.header("Interaction History")
     
-    # Update sidebar history to show only combined summary
+    # Update sidebar history to show chunk summaries
     for idx, interaction in enumerate(st.session_state.history):
         st.sidebar.markdown(f"**{interaction['time']}**")
         st.sidebar.markdown(f"**Input Method**: {interaction['input_method']}")
         st.sidebar.markdown(f"**Combined Summary**: {interaction['combined_summary']}")
-        st.sidebar.markdown(f"**Translated Summary**: {interaction['translated_summary']}")
+        st.sidebar.markdown("**Chunk Summaries:**")
+        for chunk_summary in interaction["chunk_summaries"]:
+            st.sidebar.markdown(f"- {chunk_summary}")
         st.sidebar.markdown("---")
-
