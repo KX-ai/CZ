@@ -157,14 +157,15 @@ def translate_text(text, target_language, model_id):
     }
 
     try:
-        response = requests.post(url, headers=headers, json=data)
-        if response.status_code == 200:
-            result = response.json()
-            return result['choices'][0]['message']['content']
-        else:
-            return f"Translation error: {response.status_code}"
-    except requests.exceptions.RequestException as e:
-        return f"An error occurred during translation: {e}"
+    response = requests.post(url, headers=headers, json=data)
+    if response.status_code == 200:
+        result = response.json()
+        st.write(result['choices'][0]['message']['content'])  # Use st.write() instead of return
+    else:
+        st.write(f"Error {response.status_code}: {response.text}")  # Use st.write() for errors
+except requests.exceptions.RequestException as e:
+    st.write(f"An error occurred: {e}")  # Use st.write() for exceptions
+
 
 # Updated function to transcribe audio using the Groq Whisper API
 def transcribe_audio(file):
