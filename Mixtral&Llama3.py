@@ -347,8 +347,7 @@ if uploaded_file:
 else:
     st.error("Please upload a PDF file to proceed.")
 
-
- # Summarize the extracted text only when the button is clicked
+# Summarize the extracted text only when the button is clicked
 if st.button("Summarize Text"):
     st.write("Summarizing the text...")
     summary = summarize_text(pdf_text, selected_model_id)
@@ -382,7 +381,6 @@ elif input_method == "Enter Text Manually":
             st.write("Summary:")
             st.write(summary)
 
-
             # Translate the summary to the selected language
             translated_summary = translate_text(summary, selected_language, selected_model_id)
             st.write(f"Translated Summary in {selected_language}:")
@@ -415,6 +413,7 @@ elif input_method == "Upload Image":
         # Select a model for translation and Q&A
         selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
         selected_model_id = available_models.get(selected_model_name)
+
 # Step 4: Handle Audio Upload
 elif input_method == "Upload Audio":
     uploaded_audio = st.file_uploader("Upload an audio file", type=["mp3", "wav"])
@@ -450,24 +449,24 @@ if content and selected_model_id:
     if "history" not in st.session_state:
         st.session_state.history = []  # Initialize as an empty list
 
-   # Check if history is empty or if the last entry has a 'response' key
-if len(st.session_state.history) == 0 or (
-    len(st.session_state.history) > 0 and "response" in st.session_state.history[-1]
-):
-    question = st.text_input("Ask a question about the content:")
+    # Check if history is empty or if the last entry has a 'response' key
+    if len(st.session_state.history) == 0 or (
+        len(st.session_state.history) > 0 and "response" in st.session_state.history[-1]
+    ):
+        question = st.text_input("Ask a question about the content:")
 
-    if question:
-        # Set the timezone to Malaysia for the timestamp
-        malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
-        current_time = datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
+        if question:
+            # Set the timezone to Malaysia for the timestamp
+            malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
+            current_time = datetime.now(malaysia_tz).strftime("%Y-%m-%d %H:%M:%S")
 
-        # Example: Store the question and timestamp in the history
-        st.session_state.history.append({"question": question, "timestamp": current_time})
+            # Example: Store the question and timestamp in the history
+            st.session_state.history.append({"question": question, "timestamp": current_time})
 
-        # Display the question and time for confirmation
-        st.write(f"Question logged at {current_time}: {question}")
-else:
-    st.warning("The last history entry is not ready or does not have a 'response'.")
+            # Display the question and time for confirmation
+            st.write(f"Question logged at {current_time}: {question}")
+    else:
+        st.warning("The last history entry is not ready or does not have a 'response'.")
 
     # Prepare the interaction data for history tracking
     malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
@@ -487,34 +486,35 @@ else:
     # Send the question along with the content to the selected model API for the response
     url = f"{base_url}/chat/completions"
     data = {
-                "model": selected_model_id,
-                "messages": [
-                    {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
-                    {"role": "system", "content": content},
-                    {"role": "user", "content": question}
-                ],
-                "temperature": 0.7,
-                "max_tokens": 200,
-                "top_p": 0.9
-            }
+        "model": selected_model_id,
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
+            {"role": "system", "content": content},
+            {"role": "user", "content": question}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 200,
+        "top_p": 0.9
+    }
 
     try:
-                response = requests.post(url, headers=headers, json=data)
-                if response.status_code == 200:
-                                        result = response.json()
-                    answer = result['choices'][0]['message']['content']
+        response = requests.post(url, headers=headers, json=data)
+        if response.status_code == 200:
+            result = response.json()
+            answer = result['choices'][0]['message']['content']
 
-                    # Display the answer to the user
-                    st.write("Answer:")
-                    st.write(answer)
+            # Display the answer to the user
+            st.write("Answer:")
+            st.write(answer)
 
-                    # Update the interaction with the user's question and the model's response
-                    st.session_state.history[-1]["question"] = question
-                    st.session_state.history[-1]["response"] = answer
-                else:
-                    st.error(f"Error {response.status_code}: {response.text}")
+            # Update the interaction with the user's question and the model's response
+            st.session_state.history[-1]["question"] = question
+            st.session_state.history[-1]["response"] = answer
+        else:
+            st.error(f"Error {response.status_code}: {response.text}")
     except requests.exceptions.RequestException as e:
         st.error(f"An error occurred while processing your question: {e}")
+
 
         
         else:
