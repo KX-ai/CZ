@@ -483,15 +483,20 @@ if "history" in st.session_state and st.session_state.history:
     # Display the history with expanders
     for idx, interaction in enumerate(st.session_state.history):
         with st.sidebar.expander(f"Interaction {idx+1} - {interaction['time']}"):
-            st.markdown(f"*Question*: {interaction['question']}")
-            st.markdown(f"*Response*: {interaction['response']}")
-            st.markdown(f"*Content Preview*: {interaction['content_preview']}")
+            # Check if 'question' key exists before trying to access it
+            question = interaction.get('question', 'No question asked')
+            response = interaction.get('response', 'No response yet')
+            content_preview = interaction.get('content_preview', 'No content available')
+
+            st.markdown(f"*Question*: {question}")
+            st.markdown(f"*Response*: {response}")
+            st.markdown(f"*Content Preview*: {content_preview}")
 
             # Add a button to let the user pick this interaction to continue
             if st.button(f"Continue with Interaction {idx+1}", key=f"continue_{idx}"):
                 # Load the selected interaction into the current session state for continuation
-                st.session_state['content'] = interaction['response']  # Set the response as current content
-                st.session_state['question_input'] = interaction['question']  # Load the last question as the input text
+                st.session_state['content'] = response  # Set the response as current content
+                st.session_state['question_input'] = question  # Load the last question as the input text
                 
                 # Do not add a new history entry; just continue from the last response
                 st.session_state['history'] = st.session_state['history'][:idx+1]  # Keep the history up to the selected interaction
@@ -565,12 +570,4 @@ def ask_question(question):
 if send_button:
     ask_question(question)
     
-    # Update sidebar history to show chunk summaries
-    for idx, interaction in enumerate(st.session_state.history):
-        st.sidebar.markdown(f"**{interaction['time']}**")
-        st.sidebar.markdown(f"**Input Method**: {interaction['input_method']}")
-        st.sidebar.markdown(f"**Combined Summary**: {interaction['combined_summary']}")
-        st.sidebar.markdown("**Chunk Summaries:**")
-        for chunk_summary in interaction["chunk_summaries"]:
-            st.sidebar.markdown(f"- {chunk_summary}")
-        st.sidebar.markdown("---")
+
