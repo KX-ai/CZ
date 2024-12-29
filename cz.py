@@ -357,7 +357,7 @@ if content and selected_model_id:
             st.markdown(f"**Bot:** {chat['response']}")
 
     # Input field for user to type question (without text input box)
-    new_question = st.text_area("Type your question here and press Enter", key="new_question", label_visibility="hidden", placeholder="Type your question...")
+        new_question = st.text_area("Type your question here and press Enter", key="new_question", label_visibility="hidden", placeholder="Type your question...")
 
     if new_question:
         # Process the user's question
