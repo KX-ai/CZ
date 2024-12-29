@@ -346,9 +346,12 @@ if content:
 
 
 # Step 5: Allow user to ask questions about the content (if any)
+# Ensure the session state variable exists before setting it
 if 'new_question' not in st.session_state:
-    st.session_state.new_question = ""
+    st.session_state['new_question'] = ""  # Initialize if not set
 
+# Now, you can safely set the value
+st.session_state['new_question'] = "This is the new question"
 if content and selected_model_id:
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []  # Initialize chat history in session state
