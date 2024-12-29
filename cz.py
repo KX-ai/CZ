@@ -346,9 +346,9 @@ if content:
 
 
 # Step 5: Allow user to ask questions about the content (if any)
-# Ensure the session state variable exists before setting it
+# Initialize session state for new_question if not already initialized
 if 'new_question' not in st.session_state:
-    st.session_state['new_question'] = ""  # Initialize if not set
+    st.session_state.new_question = ""  # Initialize if not set
 
 if content and selected_model_id:
     if "chat_history" not in st.session_state:
@@ -359,8 +359,8 @@ if content and selected_model_id:
     for msg in st.session_state.chat_history:
         if isinstance(msg, dict) and "question" in msg and "response" in msg:
             # Display user and bot messages with appropriate emojis
-            st.markdown(f"**User:** {msg['question']}")
-            st.markdown(f"**Botify:** {msg['response']}")
+            st.markdown(f"**\U0001F9D1 User:** {msg['question']}")
+            st.markdown(f"**\U0001F916 Botify:** {msg['response']}")
         else:
             st.error("Error: A message is missing or malformed in the chat history.")
 
@@ -392,7 +392,7 @@ if content and selected_model_id:
                 # Append the conversation to the chat history
                 st.session_state.chat_history.append({"question": new_question, "response": answer})
 
-                # Clear the input box
+                # Clear the input box by resetting the session state variable
                 st.session_state.new_question = ""
 
             else:
@@ -403,6 +403,7 @@ if content and selected_model_id:
 
 else:
     st.write("You can ask more questions or clarify any points.")
+
 
         
 
