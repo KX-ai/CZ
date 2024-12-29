@@ -359,8 +359,8 @@ if content and selected_model_id:
     for msg in st.session_state.chat_history:
         if isinstance(msg, dict) and "question" in msg and "response" in msg:
             # Display user and bot messages with appropriate emojis
-            st.markdown(f"**\U0001F9D1 User:** {msg['question']}")
-            st.markdown(f"**\U0001F916 Botify:** {msg['response']}")
+            st.markdown(f"**User:** {msg['question']}")
+            st.markdown(f"**Botify:** {msg['response']}")
         else:
             st.error("Error: A message is missing or malformed in the chat history.")
 
