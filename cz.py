@@ -346,6 +346,9 @@ if content:
 
 
 # Step 5: Allow user to ask questions about the content (if any)
+if 'new_question' not in st.session_state:
+    st.session_state.new_question = ""
+
 if content and selected_model_id:
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []  # Initialize chat history in session state
