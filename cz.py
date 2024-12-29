@@ -351,7 +351,7 @@ if content and selected_model_id:
         st.session_state.chat_history = []  # Initialize chat history in session state
 
     # Display existing chat history dynamically
-    for chat in st.session_state.chat_history:
+      for chat in st.session_state.chat_history:
         with st.container():
             st.markdown(f"**User:** {chat['question']}")
             st.markdown(f"**Bot:** {chat['response']}")
