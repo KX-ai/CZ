@@ -416,11 +416,7 @@ if "history" in st.session_state and st.session_state.history:
 
     # Add the "Clear History" button to reset the interaction history
     if st.sidebar.button("Clear History"):
-        # Clear the history and content from session state
         st.session_state['history'] = []
-        st.session_state['chat_history'] = []  # Clear dynamic chat history
-        st.session_state['content'] = ''
-        st.session_state['question_input'] = ''
         st.sidebar.success("History has been cleared!")
         st.rerun()  # Refresh the app to reflect the changes
 
@@ -432,11 +428,12 @@ if "history" in st.session_state and st.session_state.history:
             st.markdown(f"*Content Preview*: {interaction['content_preview']}")
 
             # Add a button to let the user pick this interaction to continue
-            if st.button(f"Continue with Interaction {idx+1}", key=f"continue_{idx}"):
+            if st.sidebar.button(f"Continue with Interaction {idx+1}", key=f"continue_{idx}"):
                 # Load the selected interaction into the current session state for continuation
                 st.session_state.content = interaction['response']  # Load response as content
                 st.session_state.chat_history = st.session_state.history[:idx+1]  # Load partial history
-                st.rerun()
+                st.rerun()  # Rerun to update the chat flow
+
                 
                 # Do not add a new history entry; just continue from the last response
                 st.session_state['history'] = st.session_state['history'][:idx+1]  # Keep the history up to the selected interaction
