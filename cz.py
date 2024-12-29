@@ -347,19 +347,19 @@ if content:
 
 # Step 5: Allow user to ask questions about the content (if any)
 if content and selected_model_id:
-      if "chat_history" not in st.session_state:
+    if "chat_history" not in st.session_state:
         st.session_state.chat_history = []  # Initialize chat history in session state
 
     # Display existing chat history dynamically
-      for chat in st.session_state.chat_history:
+    for chat in st.session_state.chat_history:
         with st.container():
             st.markdown(f"**User:** {chat['question']}")
             st.markdown(f"**Bot:** {chat['response']}")
 
     # Input field for user to type question (without text input box)
-        new_question = st.text_area("Type your question here and press Enter", key="new_question", label_visibility="hidden", placeholder="Type your question...")
+    new_question = st.text_area("Type your question here and press Enter", key="new_question", label_visibility="hidden", placeholder="Type your question...")
 
-                                if new_question:
+    if new_question:
         # Process the user's question
         url = f"{base_url}/chat/completions"
         data = {
@@ -377,7 +377,7 @@ if content and selected_model_id:
         try:
             response = requests.post(url, headers=headers, json=data)
 
-                if response.status_code == 200:
+            if response.status_code == 200:
                 result = response.json()
                 answer = result['choices'][0]['message']['content']
 
