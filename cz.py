@@ -394,8 +394,8 @@ if content and selected_model_id:
 
                 # Clear the input box by resetting the session state variable
                 if 'new_question' in st.session_state:
-    del st.session_state['new_question']
-st.session_state['new_question'] = ""
+                    del st.session_state['new_question']
+                st.session_state['new_question'] = ""
 
 
             else:
