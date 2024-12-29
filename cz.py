@@ -457,16 +457,6 @@ if "history" in st.session_state and st.session_state.history:
                 st.rerun()  # Rerun the app to update the chat flow
 
 
-# Text area input with placeholder "Message Botify" without extra label
-question = st.text_area("", 
-                        st.session_state.get('question_input', ''),  # Use session state for preserving input
-                        key="question_input", 
-                        placeholder="Message Botify",  # Placeholder text
-                        height=150)  # Adjust the height as needed
-
-# Add a "Send" button styled with an arrow
-send_button = st.button("Send", key="send_button", help="Click to send your message")
-
 # Function to ask a question about the content
 def ask_question(question):
     if question and selected_model_id:
@@ -541,6 +531,3 @@ def ask_question(question):
             st.write(f"An error occurred: {e}")
 
 
-# Ask the question when the "Send" button is pressed
-if send_button:
-    ask_question(question)
