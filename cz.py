@@ -347,8 +347,51 @@ if content:
 
 # Step 5: Allow user to ask questions about the content (if any)
 if content and selected_model_id:
-    if len(st.session_state.history) == 0 or st.session_state.history[-1]["response"]:  # If the previous response is done
-        question = st.text_input("Ask a question about the content:")
+      if "chat_history" not in st.session_state:
+        st.session_state.chat_history = []  # Initialize chat history in session state
+
+    # Display existing chat history dynamically
+    for chat in st.session_state.chat_history:
+        with st.container():
+            st.markdown(f"**User:** {chat['question']}")
+            st.markdown(f"**Bot:** {chat['response']}")
+
+    # Input field for user to type question (without text input box)
+    new_question = st.text_area("Type your question here and press Enter", key="new_question", label_visibility="hidden", placeholder="Type your question...")
+
+    if new_question:
+        # Process the user's question
+        url = f"{base_url}/chat/completions"
+        data = {
+            "model": selected_model_id,
+            "messages": [
+                {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
+                {"role": "system", "content": content},
+                {"role": "user", "content": new_question}
+            ],
+            "temperature": 0.7,
+            "max_tokens": 200,
+            "top_p": 0.9
+        }
+
+        try:
+            response = requests.post(url, headers=headers, json=data)
+
+            if response.status_code == 200:
+                result = response.json()
+                answer = result['choices'][0]['message']['content']
+
+                # Append the conversation to the chat history
+                st.session_state.chat_history.append({"question": new_question, "response": answer})
+
+                # Clear the input box
+                st.session_state.new_question = ""
+
+            else:
+                st.error(f"Error {response.status_code}: {response.text}")
+
+        except requests.exceptions.RequestException as e:
+            st.error(f"An error occurred: {e}")
 
         if question:
             # Set the timezone to Malaysia for the timestamp
@@ -370,19 +413,7 @@ if content and selected_model_id:
             # Track start time for response calculation
             start_time = time.time()
 
-            # Send the question along with the content to the selected model API for the response
-            url = f"{base_url}/chat/completions"
-            data = {
-                "model": selected_model_id,
-                "messages": [
-                    {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
-                    {"role": "system", "content": content},
-                    {"role": "user", "content": question}
-                ],
-                "temperature": 0.7,
-                "max_tokens": 200,
-                "top_p": 0.9
-            }
+           
 
             try:
                 # Send the request to the API
@@ -434,6 +465,7 @@ if "history" in st.session_state and st.session_state.history:
     if st.sidebar.button("Clear History"):
         # Clear the history and content from session state
         st.session_state['history'] = []
+        st.session_state['chat_history'] = []  # Clear dynamic chat history
         st.session_state['content'] = ''
         st.session_state['question_input'] = ''
         st.sidebar.success("History has been cleared!")
@@ -449,8 +481,9 @@ if "history" in st.session_state and st.session_state.history:
             # Add a button to let the user pick this interaction to continue
             if st.button(f"Continue with Interaction {idx+1}", key=f"continue_{idx}"):
                 # Load the selected interaction into the current session state for continuation
-                st.session_state['content'] = interaction['response']  # Set the response as current content
-                st.session_state['question_input'] = interaction['question']  # Load the last question as the input text
+                st.session_state.content = interaction['response']  # Load response as content
+                st.session_state.chat_history = st.session_state.history[:idx+1]  # Load partial history
+                st.rerun()
                 
                 # Do not add a new history entry; just continue from the last response
                 st.session_state['history'] = st.session_state['history'][:idx+1]  # Keep the history up to the selected interaction
