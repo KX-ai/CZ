@@ -464,7 +464,7 @@ if st.session_state.history:
             st.markdown(f"- **Question:** {interaction['question']}")
             st.markdown(f"- **Response:** {interaction['response']}")
 
-# Display the past conversations
+# Display the past conversations and allow users to continue
 if st.session_state.past_conversations:
     st.sidebar.write("**Past Conversations:**")
     for conv_idx, conversation in enumerate(st.session_state.past_conversations):
@@ -473,6 +473,14 @@ if st.session_state.past_conversations:
                 st.markdown(f"**Interaction {idx+1}:**")
                 st.markdown(f"- **Question:** {interaction['question']}")
                 st.markdown(f"- **Response:** {interaction['response']}")
+            
+            # Add a button to continue this past conversation
+            if st.sidebar.button(f"Continue Conversation {conv_idx+1}", key=f"continue_{conv_idx}"):
+                # Load the selected conversation into the current history
+                st.session_state.history = conversation
+                st.session_state.past_conversations.pop(conv_idx)  # Remove from past conversations
+                st.sidebar.success(f"Continuing Conversation {conv_idx+1}")
+                st.rerun()  # Refresh the app to reflect the changes
 else:
     st.sidebar.write("No past conversations yet.")
 
@@ -497,6 +505,7 @@ def append_to_history(question, response):
         "question": question,
         "response": response
     })
+
 
 
 # Function to ask a question about the content
