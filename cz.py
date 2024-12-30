@@ -238,7 +238,7 @@ if "history" not in st.session_state:
 # Initialize content variable
 content = ""
 
-# Language selection for translation
+# Language selection for translation (only for PDF)
 languages = [
     "English", "Chinese", "Spanish", "French", "Italian", "Portuguese", "Romanian", 
     "German", "Dutch", "Swedish", "Danish", "Norwegian", "Russian", 
@@ -246,7 +246,6 @@ languages = [
     "Korean", "Hindi", "Bengali", "Arabic", "Hebrew", "Persian", 
     "Punjabi", "Tamil", "Telugu", "Swahili", "Amharic"
 ]
-selected_language = st.selectbox("Choose your preferred language for output", languages)
 
 # Step 1: Handle PDF Upload and Summarization
 if input_method == "Upload PDF":
@@ -262,6 +261,9 @@ if input_method == "Upload PDF":
         # Initialize session state variables
         st.session_state['content'] = content  # Store the extracted text in session state
         st.session_state['pdf_text'] = content  # Store a copy of the full PDF text for later use
+
+        # Language selection for output (only for PDF)
+        selected_language = st.selectbox("Choose your preferred language for output", languages)
 
         # Summarize the extracted text only when the button is clicked
         if st.button("Summarize Text"):
@@ -312,7 +314,7 @@ elif input_method == "Upload Image":
         except Exception as e:
             st.error(f"Error extracting text from image: {e}")
 
-        # Model selection for translation and Q&A
+        # Model selection for Q&A
         selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
         selected_model_id = available_models.get(selected_model_name)
 
@@ -339,8 +341,8 @@ elif input_method == "Upload Audio":
     selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="audio_model_selection")
     selected_model_id = available_models.get(selected_model_name)
 
-# Translation of the extracted text to selected language
-if content:
+# Translation of the extracted text to selected language (only if PDF)
+if content and input_method == "Upload PDF":
     translated_content = translate_text(content, selected_language, selected_model_id)
 
 
