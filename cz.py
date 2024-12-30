@@ -353,7 +353,21 @@ if 'new_question' not in st.session_state:
 if content and selected_model_id:
     if "chat_history" not in st.session_state:
         st.session_state.chat_history = []  # Initialize chat history in session state
+        
+# Ensure all necessary session state variables are initialized at the beginning
+if 'new_question' not in st.session_state:
+    st.session_state['new_question'] = ""
+if 'history' not in st.session_state:
+    st.session_state['history'] = []
+if 'chat_history' not in st.session_state:
+    st.session_state['chat_history'] = []
+if 'content' not in st.session_state:
+    st.session_state['content'] = ""
+if 'question_input' not in st.session_state:
+    st.session_state['question_input'] = ""
 
+st.session_state['new_question'] = ""
+    
     # Display chat history dynamically
     st.write("### Chat Conversation")
     for msg in st.session_state.chat_history:
@@ -383,8 +397,8 @@ if new_question:
         "top_p": 0.9
     }
 
-    try:
-        response = requests.post(url, headers=headers, json=data)
+    try:url, headers=h
+        response = requests.post(eaders, json=data)
 
         if response.status_code == 200:
             result = response.json()
