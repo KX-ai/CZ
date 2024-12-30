@@ -437,28 +437,24 @@ if "history" in st.session_state and st.session_state.history:
 
     # Add the "Clear History" button to reset the interaction history
     if st.sidebar.button("Clear History"):
-        # Clear the history and content from session state
+        # Clear the history and refresh the session state
         st.session_state['history'] = []
         st.session_state['content'] = ''
-        st.session_state['question_input'] = ''
         st.sidebar.success("History has been cleared!")
         st.rerun()  # Refresh the app to reflect the changes
 
     # Display the history with expanders
     for idx, interaction in enumerate(st.session_state.history):
         with st.sidebar.expander(f"Interaction {idx+1} - {interaction['time']}"):
-            st.markdown(f"*Question*: {interaction['question']}")
-            st.markdown(f"*Response*: {interaction['response']}")
-            st.markdown(f"*Content Preview*: {interaction['content_preview']}")
+            st.markdown(f"**Question:** {interaction['question']}")
+            st.markdown(f"**Response:** {interaction['response']}")
+            st.markdown(f"**Content Preview:** {interaction['content_preview']}")
 
             # Add a button to let the user pick this interaction to continue
             if st.button(f"Continue with Interaction {idx+1}", key=f"continue_{idx}"):
                 # Load the selected interaction into the current session state for continuation
                 st.session_state['content'] = interaction['response']  # Set the response as current content
-                st.session_state['question_input'] = interaction['question']  # Load the last question as the input text
-                
-                # Do not add a new history entry; just continue from the last response
-                st.session_state['history'] = st.session_state['history'][:idx+1]  # Keep the history up to the selected interaction
+                st.session_state['history'] = st.session_state['history'][:idx+1]  # Truncate history to this point
                 st.rerun()  # Rerun the app to update the chat flow
 
 
