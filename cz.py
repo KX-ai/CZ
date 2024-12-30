@@ -458,11 +458,11 @@ if st.sidebar.button("Clear History"):
 # Display the current chat history if available
 if st.session_state.history:
     st.sidebar.write("**Current Chat:**")
-    for idx, interaction in enumerate(st.session_state.history):
-        with st.sidebar.expander(f"Interaction {idx+1} - {interaction['time']}"):
-            st.markdown(f"**Question:** {interaction['question']}")
-            st.markdown(f"**Response:** {interaction['response']}")
-            st.markdown(f"**Content Preview:** {interaction['content_preview']}")
+    with st.sidebar.expander("Full Conversation"):
+        for idx, interaction in enumerate(st.session_state.history):
+            st.markdown(f"**Interaction {idx+1}:**")
+            st.markdown(f"- **Question:** {interaction['question']}")
+            st.markdown(f"- **Response:** {interaction['response']}")
 
 # Display the past conversations
 if st.session_state.past_conversations:
@@ -478,6 +478,10 @@ else:
 
 # Add the "Start New Chat" button to reset only the current interaction history
 if st.sidebar.button("Start a New Chat"):
+    if st.session_state.history:
+        # Move the current history to past conversations
+        st.session_state.past_conversations.append(st.session_state.history)
+
     # Clear the current history for a new chat session
     st.session_state.history = []
     st.session_state['content'] = ''
@@ -485,8 +489,14 @@ if st.sidebar.button("Start a New Chat"):
     st.sidebar.success("New chat started!")
     st.rerun()  # Refresh the app to reflect the changes
 
-
-
+# Add functionality to save the entire conversation
+def append_to_history(question, response):
+    """Append a question and response to the current conversation history."""
+    st.session_state.history.append({
+        "time": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
+        "question": question,
+        "response": response
+    })
 
 
 # Function to ask a question about the content
