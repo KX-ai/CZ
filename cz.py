@@ -394,27 +394,22 @@ if new_question:
             st.session_state.chat_history.append({"question": new_question, "response": answer})
 
             # Clear the input box by resetting the session state variable
-            st.session_state['new_question'] = ""
+# Ensure all necessary session state variables are initialized at the beginning
+for key in ['new_question', 'history', 'chat_history', 'content', 'question_input']:
+    if key not in st.session_state:
+        st.session_state[key] = "" if key in ['new_question', 'content', 'question_input'] else []
 
-            # Display the updated chat history instantly
-            st.write("### Chat Conversation")
-            for msg in st.session_state.chat_history:
-                if "question" in msg and "response" in msg:
-                    st.markdown(f"**\U0001F9D1 User:** {msg['question']}")
-                    st.markdown(f"**\U0001F916 Botify:** {msg['response']}")
+st.session_state['new_question'] = ""
 
-        else:
-            st.error(f"Error {response.status_code}: {response.text}")
-
-    except requests.exceptions.RequestException as e:
-        st.error(f"An error occurred: {e}")
-
+# Display the updated chat history instantly
+st.write("### Chat Conversation")
+for msg in st.session_state.chat_history:
+    if "question" in msg and "response" in msg:
+        st.markdown(f"**\U0001F9D1 User:** {msg['question']}")
+        st.markdown(f"**\U0001F916 Botify:** {msg['response']}")
 
 else:
     st.write("You can ask more questions or clarify any points.")
-
-
-        
 
 # Display the interaction history in the sidebar with clickable expanders
 if "history" in st.session_state and st.session_state.history:
@@ -428,7 +423,7 @@ if "history" in st.session_state and st.session_state.history:
         st.session_state['content'] = ''
         st.session_state['question_input'] = ''
         st.sidebar.success("History has been cleared!")
-        st.rerun()  # Refresh the app to reflect the changes
+        st.experimental_rerun()  # Refresh the app to reflect the changes
 
     # Display the history with expanders
     for idx, interaction in enumerate(st.session_state.history):
@@ -440,14 +435,10 @@ if "history" in st.session_state and st.session_state.history:
             # Add a button to let the user pick this interaction to continue
             if st.button(f"Continue with Interaction {idx+1}", key=f"continue_{idx}"):
                 # Load the selected interaction into the current session state for continuation
-                st.session_state.content = interaction['response']  # Load response as content
-                st.session_state.chat_history = st.session_state.history[:idx+1]  # Load partial history
-                st.rerun()
-                
-                # Do not add a new history entry; just continue from the last response
-                st.session_state['history'] = st.session_state['history'][:idx+1]  # Keep the history up to the selected interaction
-                st.rerun()  # Rerun the app to update the chat flow
-
+                st.session_state['content'] = interaction['response']  # Load response as content
+                st.session_state['chat_history'] = st.session_state.history[:idx+1]  # Load partial history
+                st.session_state['history'] = st.session_state.history[:idx+1]  # Keep the history up to the selected interaction
+                st.experimental_rerun()  # Rerun the app to update the chat flow
 
 # Function to ask a question about the content
 def ask_question(question):
@@ -518,6 +509,6 @@ def ask_question(question):
                     st.session_state['content'] += f"\n{question}: {answer}"
 
             else:
-                st.write(f"Error {response.status_code}: {response.text}")
+                st.error(f"Error {response.status_code}: {response.text}")
         except requests.exceptions.RequestException as e:
-            st.write(f"An error occurred: {e}")
+            st.error(f"An error occurred: {e}")
