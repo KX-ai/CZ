@@ -468,9 +468,9 @@ if st.session_state.history:
 if st.session_state.past_conversations:
     st.sidebar.write("**Past Conversations:**")
     for conv_idx, conversation in enumerate(st.session_state.past_conversations):
-        with st.sidebar.expander(f"Conversation {conv_idx+1}"):
+        with st.sidebar.expander(f"Interaction {conv_idx+1}"):
             for idx, interaction in enumerate(conversation):
-                st.markdown(f"**Interaction {idx+1}:**")
+                st.markdown(f"**Conversation {idx+1}:**")
                 st.markdown(f"- **Question:** {interaction['question']}")
                 st.markdown(f"- **Response:** {interaction['response']}")
             
