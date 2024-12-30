@@ -366,7 +366,6 @@ if 'content' not in st.session_state:
 if 'question_input' not in st.session_state:
     st.session_state['question_input'] = ""
 
-st.session_state['new_question'] = ""
     
     # Display chat history dynamically
     st.write("### Chat Conversation")
