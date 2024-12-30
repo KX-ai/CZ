@@ -439,17 +439,18 @@ if content and selected_model_id:
 
 
 # Display the interaction history in the sidebar with clickable expanders
+st.sidebar.header("Interaction History")
+
+# Add the "Clear History" button to reset the interaction history
+if st.sidebar.button("Clear History"):
+    # Clear the history and refresh the session state
+    st.session_state['history'] = []
+    st.session_state['content'] = ''
+    st.sidebar.success("History has been cleared!")
+    st.rerun()  # Refresh the app to reflect the changes
+
+# Check if there's history to display
 if "history" in st.session_state and st.session_state.history:
-    st.sidebar.header("Interaction History")
-
-    # Add the "Clear History" button to reset the interaction history
-    if st.sidebar.button("Clear History"):
-        # Clear the history and refresh the session state
-        st.session_state['history'] = []
-        st.session_state['content'] = ''
-        st.sidebar.success("History has been cleared!")
-        st.rerun()  # Refresh the app to reflect the changes
-
     # Display the history with expanders
     for idx, interaction in enumerate(st.session_state.history):
         with st.sidebar.expander(f"Interaction {idx+1} - {interaction['time']}"):
@@ -463,6 +464,10 @@ if "history" in st.session_state and st.session_state.history:
                 st.session_state['content'] = interaction['response']  # Set the response as current content
                 st.session_state['history'] = st.session_state['history'][:idx+1]  # Truncate history to this point
                 st.rerun()  # Rerun the app to update the chat flow
+else:
+    # Display a message indicating no history is available
+    st.sidebar.write("No interactions yet. Start a conversation to see history here.")
+
 
 
 # Function to ask a question about the content
