@@ -357,7 +357,7 @@ if content and selected_model_id:
 
     # Get user input using the chat-style input field
     user_input = st.chat_input("Ask a question about the content:")
-    
+
     if user_input:
         # Set the timezone to Malaysia for the timestamp
         malaysia_tz = pytz.timezone("Asia/Kuala_Lumpur")
@@ -374,6 +374,12 @@ if content and selected_model_id:
 
         # Add the user question to the history
         st.session_state.history.append(interaction)
+
+        # Display the user's input immediately
+        st.chat_message("user").write(user_input)
+
+        # Placeholder for assistant response
+        response_placeholder = st.chat_message("assistant").write("Thinking...")
 
         # Track start time for response calculation
         start_time = time.time()
@@ -407,8 +413,10 @@ if content and selected_model_id:
                 # Update the latest interaction with the model's response
                 st.session_state.history[-1]["response"] = answer
 
-                # Display the model's response
-                st.chat_message("assistant").write(answer)
+                # Update the assistant's response dynamically
+                response_placeholder.update(answer)
+
+                # Display the response time
                 st.write(f"Response Time: {response_time:.2f} seconds")
 
                 # Calculate ROUGE scores between the answer and the content (or summary)
@@ -425,9 +433,10 @@ if content and selected_model_id:
                     # Display ROUGE scores
                     st.write(f"ROUGE-1: {rouge1.fmeasure:.4f}, ROUGE-2: {rouge2.fmeasure:.4f}, ROUGE-L: {rougeL.fmeasure:.4f}")
             else:
-                st.write(f"Error {response.status_code}: {response.text}")
+                response_placeholder.update(f"Error {response.status_code}: {response.text}")
         except requests.exceptions.RequestException as e:
-            st.write(f"An error occurred: {e}")
+            response_placeholder.update(f"An error occurred: {e}")
+
 
         
 
