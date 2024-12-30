@@ -441,11 +441,19 @@ if content and selected_model_id:
 # Display the interaction history in the sidebar with clickable expanders
 st.sidebar.header("Interaction History")
 
-# Add the "Clear History" button to reset the interaction history
-if st.sidebar.button("Clear History"):
-    # Clear the history and refresh the session state
+# Add the "Start New Chat" button to reset all session state variables
+if st.sidebar.button("Start New Chat"):
+    # Clear all relevant session state variables
     st.session_state['history'] = []
     st.session_state['content'] = ''
+    st.session_state['generated_summary'] = ''
+    st.sidebar.success("New chat started!")
+    st.rerun()  # Refresh the app to reflect the changes
+
+# Add the "Clear History" button to reset the interaction history
+if st.sidebar.button("Clear History"):
+    # Clear only the history while keeping other states intact
+    st.session_state['history'] = []
     st.sidebar.success("History has been cleared!")
     st.rerun()  # Refresh the app to reflect the changes
 
