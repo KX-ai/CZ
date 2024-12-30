@@ -316,7 +316,6 @@ elif input_method == "Upload Image":
         selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
         selected_model_id = available_models.get(selected_model_name)
 
-
         
 # Step 4: Handle Audio Upload
 elif input_method == "Upload Audio":
@@ -336,10 +335,9 @@ elif input_method == "Upload Audio":
     else:
         st.error("Please upload an audio file to proceed.")
 
-    # Select a model for Q&A
+    # Select a model for translation and Q&A
     selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="audio_model_selection")
     selected_model_id = available_models.get(selected_model_name)
-
 
 # Translation of the extracted text to selected language
 if content:
@@ -596,6 +594,3 @@ def ask_question(question):
                 st.write(f"Error {response.status_code}: {response.text}")
         except requests.exceptions.RequestException as e:
             st.write(f"An error occurred: {e}")
-
-
-
