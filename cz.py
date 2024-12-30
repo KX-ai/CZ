@@ -445,6 +445,9 @@ if "history" not in st.session_state:
 if "past_conversations" not in st.session_state:
     st.session_state.past_conversations = []
 
+if "current_conversation_index" not in st.session_state:
+    st.session_state.current_conversation_index = -1  # -1 indicates no specific past conversation is active
+
 # Display the interaction history in the sidebar with clickable expanders
 st.sidebar.header("Interaction History")
 
@@ -452,6 +455,8 @@ st.sidebar.header("Interaction History")
 if st.sidebar.button("Clear History"):
     # Clear the archive of past conversations
     st.session_state.past_conversations = []
+    st.session_state.history = []
+    st.session_state.current_conversation_index = -1
     st.sidebar.success("All past conversations have been cleared!")
     st.rerun()  # Refresh the app to reflect the changes
 
@@ -464,22 +469,26 @@ if st.session_state.history:
             st.markdown(f"- **Question:** {interaction['question']}")
             st.markdown(f"- **Response:** {interaction['response']}")
 
-# Display the past conversations and allow users to continue
+# Display the past conversations and allow users to navigate between them
 if st.session_state.past_conversations:
     st.sidebar.write("**Past Conversations:**")
     for conv_idx, conversation in enumerate(st.session_state.past_conversations):
-        with st.sidebar.expander(f"Interaction {conv_idx+1}"):
+        with st.sidebar.expander(f"Conversation {conv_idx+1}"):
             for idx, interaction in enumerate(conversation):
-                st.markdown(f"**Conversation {idx+1}:**")
+                st.markdown(f"**Interaction {idx+1}:**")
                 st.markdown(f"- **Question:** {interaction['question']}")
                 st.markdown(f"- **Response:** {interaction['response']}")
             
-            # Add a button to continue this past conversation
-            if st.sidebar.button(f"Continue Conversation {conv_idx+1}", key=f"continue_{conv_idx}"):
+            # Add a button to switch to this past conversation
+            if st.sidebar.button(f"Switch to Conversation {conv_idx+1}", key=f"switch_{conv_idx}"):
+                # Save the current history to past conversations
+                if st.session_state.current_conversation_index == -1 and st.session_state.history:
+                    st.session_state.past_conversations.append(st.session_state.history)
+                
                 # Load the selected conversation into the current history
                 st.session_state.history = conversation
-                st.session_state.past_conversations.pop(conv_idx)  # Remove from past conversations
-                st.sidebar.success(f"Continuing Conversation {conv_idx+1}")
+                st.session_state.current_conversation_index = conv_idx
+                st.sidebar.success(f"Switched to Conversation {conv_idx+1}")
                 st.rerun()  # Refresh the app to reflect the changes
 else:
     st.sidebar.write("No past conversations yet.")
@@ -487,11 +496,16 @@ else:
 # Add the "Start New Chat" button to reset only the current interaction history
 if st.sidebar.button("Start a New Chat"):
     if st.session_state.history:
-        # Move the current history to past conversations
-        st.session_state.past_conversations.append(st.session_state.history)
+        # Save the current history to past conversations
+        if st.session_state.current_conversation_index == -1:
+            st.session_state.past_conversations.append(st.session_state.history)
+        else:
+            # Update the active conversation in past conversations
+            st.session_state.past_conversations[st.session_state.current_conversation_index] = st.session_state.history
 
     # Clear the current history for a new chat session
     st.session_state.history = []
+    st.session_state.current_conversation_index = -1
     st.session_state['content'] = ''
     st.session_state['generated_summary'] = ''
     st.sidebar.success("New chat started!")
