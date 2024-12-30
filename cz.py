@@ -312,7 +312,7 @@ elif input_method == "Upload Image":
         except Exception as e:
             st.error(f"Error extracting text from image: {e}")
 
-        # Model selection for translation and Q&A
+        # Model selection for Q&A
         selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="model_selection")
         selected_model_id = available_models.get(selected_model_name)
 
@@ -335,13 +335,16 @@ elif input_method == "Upload Audio":
     else:
         st.error("Please upload an audio file to proceed.")
 
-    # Select a model for translation and Q&A
+    # Select a model for Q&A
     selected_model_name = st.selectbox("Choose a model:", list(available_models.keys()), key="audio_model_selection")
     selected_model_id = available_models.get(selected_model_name)
 
-# Translation of the extracted text to selected language
+# Translation of the extracted text to selected language (removed for audio and image)
+# This part is now removed, as per your requirement.
 if content:
-    translated_content = translate_text(content, selected_language, selected_model_id)
+    # The content will be handled as-is, without translation
+    st.write("Content is ready for further processing:")
+    st.write(content)
 
 
 
