@@ -346,15 +346,8 @@ if content:
 
 
 # Step 5: Allow user to ask questions about the content (if any)
-# Initialize session state for new_question if not already initialized
-if 'new_question' not in st.session_state:
-    st.session_state.new_question = ""  # Initialize if not set
 
-if content and selected_model_id:
-    if "chat_history" not in st.session_state:
-        st.session_state.chat_history = []  # Initialize chat history in session state
-        
-# Ensure all necessary session state variables are initialized at the beginning
+# Initialize session state for variables if not already initialized
 if 'new_question' not in st.session_state:
     st.session_state['new_question'] = ""
 if 'history' not in st.session_state:
@@ -366,29 +359,28 @@ if 'content' not in st.session_state:
 if 'question_input' not in st.session_state:
     st.session_state['question_input'] = ""
 
-    
-    # Display chat history dynamically
-    st.write("### Chat Conversation")
-    for msg in st.session_state.chat_history:
-        if isinstance(msg, dict) and "question" in msg and "response" in msg:
-            # Display user and bot messages with appropriate emojis
-            st.markdown(f"**\U0001F9D1 User:** {msg['question']}")
-            st.markdown(f"**\U0001F916 Botify:** {msg['response']}")
-        else:
-            st.error("Error: A message is missing or malformed in the chat history.")
+# Display chat history dynamically
+st.write("### Chat Conversation")
+for msg in st.session_state.chat_history:
+    if isinstance(msg, dict) and "question" in msg and "response" in msg:
+        # Display user and bot messages with appropriate emojis
+        st.markdown(f"**\U0001F9D1 User:** {msg['question']}")
+        st.markdown(f"**\U0001F916 Botify:** {msg['response']}")
+    else:
+        st.error("Error: A message is missing or malformed in the chat history.")
 
-    # Input field for user to type question
-    new_question = st.text_area("Type your question here and press Enter", key="new_question", label_visibility="hidden", placeholder="Type your question...")
+# Input field for user to type question
+new_question = st.text_area("Type your question here and press Enter", key="new_question", label_visibility="hidden", placeholder="Type your question...")
 
 # Update the chat history dynamically when a new question is asked
 if new_question:
-    # Process the user's question (same as before)
+    # Process the user's question
     url = f"{base_url}/chat/completions"
     data = {
         "model": selected_model_id,
         "messages": [
             {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
-            {"role": "system", "content": content},
+            {"role": "system", "content": st.session_state['content']},
             {"role": "user", "content": new_question}
         ],
         "temperature": 0.7,
@@ -396,36 +388,32 @@ if new_question:
         "top_p": 0.9
     }
 
-    try:url, headers=h
-        response = requests.post(eaders, json=data)
+    try:
+        response = requests.post(url, headers=headers, json=data)
 
         if response.status_code == 200:
             result = response.json()
             answer = result['choices'][0]['message']['content']
 
             # Append the conversation to the chat history
-            st.session_state.chat_history.append({"question": new_question, "response": answer})
+            st.session_state['chat_history'].append({"question": new_question, "response": answer})
 
             # Clear the input box by resetting the session state variable
-# Ensure all necessary session state variables are initialized at the beginning
-for key in ['new_question', 'history', 'chat_history', 'content', 'question_input']:
-    if key not in st.session_state:
-        st.session_state[key] = "" if key in ['new_question', 'content', 'question_input'] else []
+            st.session_state['new_question'] = ""
 
-st.session_state['new_question'] = ""
+            # Display the updated chat history instantly
+            st.write("### Chat Conversation")
+            for msg in st.session_state.chat_history:
+                st.markdown(f"**\U0001F9D1 User:** {msg['question']}")
+                st.markdown(f"**\U0001F916 Botify:** {msg['response']}")
 
-# Display the updated chat history instantly
-st.write("### Chat Conversation")
-for msg in st.session_state.chat_history:
-    if "question" in msg and "response" in msg:
-        st.markdown(f"**\U0001F9D1 User:** {msg['question']}")
-        st.markdown(f"**\U0001F916 Botify:** {msg['response']}")
-
-else:
-    st.write("You can ask more questions or clarify any points.")
+        else:
+            st.error(f"Error {response.status_code}: {response.text}")
+    except requests.exceptions.RequestException as e:
+        st.error(f"An error occurred: {e}")
 
 # Display the interaction history in the sidebar with clickable expanders
-if "history" in st.session_state and st.session_state.history:
+if "history" in st.session_state and st.session_state['history']:
     st.sidebar.header("Interaction History")
 
     # Add the "Clear History" button to reset the interaction history
@@ -439,7 +427,7 @@ if "history" in st.session_state and st.session_state.history:
         st.experimental_rerun()  # Refresh the app to reflect the changes
 
     # Display the history with expanders
-    for idx, interaction in enumerate(st.session_state.history):
+    for idx, interaction in enumerate(st.session_state['history']):
         with st.sidebar.expander(f"Interaction {idx+1} - {interaction['time']}"):
             st.markdown(f"*Question*: {interaction['question']}")
             st.markdown(f"*Response*: {interaction['response']}")
@@ -449,9 +437,10 @@ if "history" in st.session_state and st.session_state.history:
             if st.button(f"Continue with Interaction {idx+1}", key=f"continue_{idx}"):
                 # Load the selected interaction into the current session state for continuation
                 st.session_state['content'] = interaction['response']  # Load response as content
-                st.session_state['chat_history'] = st.session_state.history[:idx+1]  # Load partial history
-                st.session_state['history'] = st.session_state.history[:idx+1]  # Keep the history up to the selected interaction
+                st.session_state['chat_history'] = st.session_state['history'][:idx+1]  # Load partial history
+                st.session_state['history'] = st.session_state['history'][:idx+1]  # Keep the history up to the selected interaction
                 st.experimental_rerun()  # Rerun the app to update the chat flow
+
 
 # Function to ask a question about the content
 def ask_question(question):
