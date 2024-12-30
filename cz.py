@@ -438,43 +438,64 @@ if content and selected_model_id:
             st.chat_message("assistant").write(f"An error occurred: {e}")
 
 
+# Initialize session state variables if not already set
+if "history" not in st.session_state:
+    st.session_state.history = []
+
+if "past_conversations" not in st.session_state:
+    st.session_state.past_conversations = []
+
 # Display the interaction history in the sidebar with clickable expanders
 st.sidebar.header("Interaction History")
 
-# Add the "Start New Chat" button to reset all session state variables
+# Add the "Start New Chat" button to archive current history and start a new chat
 if st.sidebar.button("Start New Chat"):
-    # Clear all relevant session state variables
-    st.session_state['history'] = []
+    if st.session_state.history:
+        # Move the current history to past conversations
+        st.session_state.past_conversations.append(st.session_state.history)
+
+    # Clear the current history for a new chat session
+    st.session_state.history = []
     st.session_state['content'] = ''
     st.session_state['generated_summary'] = ''
     st.sidebar.success("New chat started!")
     st.rerun()  # Refresh the app to reflect the changes
 
-# Add the "Clear History" button to reset the interaction history
-if st.sidebar.button("Clear History"):
-    # Clear only the history while keeping other states intact
-    st.session_state['history'] = []
-    st.sidebar.success("History has been cleared!")
+# Add the "Clear Current Chat" button to reset only the current interaction history
+if st.sidebar.button("Clear Current Chat"):
+    # Clear only the current chat history
+    st.session_state.history = []
+    st.sidebar.success("Current chat history has been cleared!")
     st.rerun()  # Refresh the app to reflect the changes
 
-# Check if there's history to display
-if "history" in st.session_state and st.session_state.history:
-    # Display the history with expanders
+# Add the "Clear All Past Conversations" button
+if st.sidebar.button("Clear All Past Conversations"):
+    # Clear the archive of past conversations
+    st.session_state.past_conversations = []
+    st.sidebar.success("All past conversations have been cleared!")
+    st.rerun()  # Refresh the app to reflect the changes
+
+# Display the current chat history if available
+if st.session_state.history:
+    st.sidebar.write("**Current Chat:**")
     for idx, interaction in enumerate(st.session_state.history):
         with st.sidebar.expander(f"Interaction {idx+1} - {interaction['time']}"):
             st.markdown(f"**Question:** {interaction['question']}")
             st.markdown(f"**Response:** {interaction['response']}")
             st.markdown(f"**Content Preview:** {interaction['content_preview']}")
 
-            # Add a button to let the user pick this interaction to continue
-            if st.button(f"Continue with Interaction {idx+1}", key=f"continue_{idx}"):
-                # Load the selected interaction into the current session state for continuation
-                st.session_state['content'] = interaction['response']  # Set the response as current content
-                st.session_state['history'] = st.session_state['history'][:idx+1]  # Truncate history to this point
-                st.rerun()  # Rerun the app to update the chat flow
+# Display the past conversations
+if st.session_state.past_conversations:
+    st.sidebar.write("**Past Conversations:**")
+    for conv_idx, conversation in enumerate(st.session_state.past_conversations):
+        with st.sidebar.expander(f"Conversation {conv_idx+1}"):
+            for idx, interaction in enumerate(conversation):
+                st.markdown(f"**Interaction {idx+1}:**")
+                st.markdown(f"- **Question:** {interaction['question']}")
+                st.markdown(f"- **Response:** {interaction['response']}")
 else:
-    # Display a message indicating no history is available
-    st.sidebar.write("No interactions yet. Start a conversation to see history here.")
+    st.sidebar.write("No past conversations yet.")
+
 
 
 
