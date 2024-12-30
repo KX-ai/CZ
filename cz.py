@@ -367,42 +367,48 @@ if content and selected_model_id:
     # Input field for user to type question
     new_question = st.text_area("Type your question here and press Enter", key="new_question", label_visibility="hidden", placeholder="Type your question...")
 
-    if new_question:
-        # Process the user's question
-        url = f"{base_url}/chat/completions"
-        data = {
-            "model": selected_model_id,
-            "messages": [
-                {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
-                {"role": "system", "content": content},
-                {"role": "user", "content": new_question}
-            ],
-            "temperature": 0.7,
-            "max_tokens": 200,
-            "top_p": 0.9
-        }
+# Update the chat history dynamically when a new question is asked
+if new_question:
+    # Process the user's question (same as before)
+    url = f"{base_url}/chat/completions"
+    data = {
+        "model": selected_model_id,
+        "messages": [
+            {"role": "system", "content": "You are a helpful assistant. Use the following content to answer the user's questions."},
+            {"role": "system", "content": content},
+            {"role": "user", "content": new_question}
+        ],
+        "temperature": 0.7,
+        "max_tokens": 200,
+        "top_p": 0.9
+    }
 
-        try:
-            response = requests.post(url, headers=headers, json=data)
+    try:
+        response = requests.post(url, headers=headers, json=data)
 
-            if response.status_code == 200:
-                result = response.json()
-                answer = result['choices'][0]['message']['content']
+        if response.status_code == 200:
+            result = response.json()
+            answer = result['choices'][0]['message']['content']
 
-                # Append the conversation to the chat history
-                st.session_state.chat_history.append({"question": new_question, "response": answer})
+            # Append the conversation to the chat history
+            st.session_state.chat_history.append({"question": new_question, "response": answer})
 
-                # Clear the input box by resetting the session state variable
-                if 'new_question' in st.session_state:
-                    del st.session_state['new_question']
-                st.session_state['new_question'] = ""
+            # Clear the input box by resetting the session state variable
+            st.session_state['new_question'] = ""
 
+            # Display the updated chat history instantly
+            st.write("### Chat Conversation")
+            for msg in st.session_state.chat_history:
+                if "question" in msg and "response" in msg:
+                    st.markdown(f"**\U0001F9D1 User:** {msg['question']}")
+                    st.markdown(f"**\U0001F916 Botify:** {msg['response']}")
 
-            else:
-                st.error(f"Error {response.status_code}: {response.text}")
+        else:
+            st.error(f"Error {response.status_code}: {response.text}")
 
-        except requests.exceptions.RequestException as e:
-            st.error(f"An error occurred: {e}")
+    except requests.exceptions.RequestException as e:
+        st.error(f"An error occurred: {e}")
+
 
 else:
     st.write("You can ask more questions or clarify any points.")
