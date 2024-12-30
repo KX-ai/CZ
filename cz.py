@@ -378,8 +378,8 @@ if content and selected_model_id:
         # Display the user's input immediately
         st.chat_message("user").write(user_input)
 
-        # Placeholder for assistant response
-        response_placeholder = st.chat_message("assistant").write("Thinking...")
+        # Display "Thinking..." for assistant response
+        st.chat_message("assistant").write("Thinking...")
 
         # Track start time for response calculation
         start_time = time.time()
@@ -413,8 +413,8 @@ if content and selected_model_id:
                 # Update the latest interaction with the model's response
                 st.session_state.history[-1]["response"] = answer
 
-                # Update the assistant's response dynamically
-                response_placeholder.update(answer)
+                # Display the assistant's response
+                st.chat_message("assistant").write(answer)
 
                 # Display the response time
                 st.write(f"Response Time: {response_time:.2f} seconds")
@@ -433,12 +433,10 @@ if content and selected_model_id:
                     # Display ROUGE scores
                     st.write(f"ROUGE-1: {rouge1.fmeasure:.4f}, ROUGE-2: {rouge2.fmeasure:.4f}, ROUGE-L: {rougeL.fmeasure:.4f}")
             else:
-                response_placeholder.update(f"Error {response.status_code}: {response.text}")
+                st.chat_message("assistant").write(f"Error {response.status_code}: {response.text}")
         except requests.exceptions.RequestException as e:
-            response_placeholder.update(f"An error occurred: {e}")
+            st.chat_message("assistant").write(f"An error occurred: {e}")
 
-
-        
 
 # Display the interaction history in the sidebar with clickable expanders
 if "history" in st.session_state and st.session_state.history:
