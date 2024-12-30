@@ -448,17 +448,8 @@ if "past_conversations" not in st.session_state:
 # Display the interaction history in the sidebar with clickable expanders
 st.sidebar.header("Interaction History")
 
-# Add the "Start New Chat" button to reset only the current interaction history
-if st.sidebar.button("Start New Chat"):
-    # Clear the current history for a new chat session
-    st.session_state.history = []
-    st.session_state['content'] = ''
-    st.session_state['generated_summary'] = ''
-    st.sidebar.success("New chat started!")
-    st.rerun()  # Refresh the app to reflect the changes
-
-# Add the "Clear All Past Conversations" button
-if st.sidebar.button("Clear All Past Conversations"):
+# Add the "Clear History" button to clear all past conversations
+if st.sidebar.button("Clear History"):
     # Clear the archive of past conversations
     st.session_state.past_conversations = []
     st.sidebar.success("All past conversations have been cleared!")
@@ -484,6 +475,16 @@ if st.session_state.past_conversations:
                 st.markdown(f"- **Response:** {interaction['response']}")
 else:
     st.sidebar.write("No past conversations yet.")
+
+# Add the "Start New Chat" button to reset only the current interaction history
+if st.sidebar.button("Start a New Chat"):
+    # Clear the current history for a new chat session
+    st.session_state.history = []
+    st.session_state['content'] = ''
+    st.session_state['generated_summary'] = ''
+    st.sidebar.success("New chat started!")
+    st.rerun()  # Refresh the app to reflect the changes
+
 
 
 
